@@ -33,7 +33,7 @@ export default function Footer() {
       </div>
       <div className="foot-base">
         <div className="wrap">
-          <p className="muted small">El factor NDVI → tCO₂e es ilustrativo, no una metodología certificada. El oráculo es una sola clave en esta versión.</p>
+          <p className="muted small">Datos: Sentinel-2 (ESA) · Impact Observatory · imágenes Esri</p>
           <div className="row">
             <span className="pill">Testnet</span>
             <button className="totop" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>Volver arriba ↑</button>

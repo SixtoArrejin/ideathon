@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 
 type Mode = "light" | "dark";
 const read = (): Mode => {
-  const set = document.documentElement.getAttribute("data-theme");
-  if (set === "dark" || set === "light") return set;
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark";
 };
 
 /** Alterna claro/oscuro. La elección se recuerda si el navegador deja guardarla. */

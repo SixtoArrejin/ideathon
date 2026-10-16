@@ -36,7 +36,7 @@ export default function HeroSat() {
     const m = map.current;
     if (!m || !p) return;
     rect.current?.remove();
-    const color = p.frozen ? "#ff6a4d" : "#6fe3a1";
+    const color = p.frozen ? "#ff6a4d" : "#c8f25c";
     rect.current = L.rectangle(parseBbox(p.bbox), { color, weight: 3, fillOpacity: 0.14 }).addTo(m);
     m.flyToBounds(rect.current.getBounds().pad(2.4), { duration: reduced() ? 0 : 1.6, maxZoom: 13 });
   }, [p, id]);

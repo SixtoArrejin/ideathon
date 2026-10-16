@@ -20,7 +20,7 @@ export default function Home() {
         <div className="wrap hero-grid">
           <div className="hero-copy">
             <p className="kicker">Gran Chaco · Sentinel-2 · Stellar</p>
-            <h1>El bosque, verificado <em>desde arriba</em>.</h1>
+            <h1>El bosque, verificado <em>desde arriba.</em></h1>
             <p className="lead">Dosel mide la copa del bosque con imágenes de satélite y emite créditos de carbono solo mientras el bosque sigue en pie. Cada tonelada se puede rastrear hasta la escena que la originó.</p>
             <div className="cta">
               <a className="btn" href={hrefFor("predios")}>Explorar los predios</a>

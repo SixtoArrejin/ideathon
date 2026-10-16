@@ -29,7 +29,7 @@ export default function ParcelMap({ parcels, selected, onSelect }: Props) {
     Object.values(layers.current).forEach((r) => r.remove());
     layers.current = {};
     for (const [id, p] of Object.entries(parcels)) {
-      const color = p.frozen ? "#ff6a4d" : "#6fe3a1";
+      const color = p.frozen ? "#ff6a4d" : "#c8f25c";
       const rect = L.rectangle(parseBbox(p.bbox), { color, weight: id === selected ? 3 : 1.5, fillOpacity: id === selected ? 0.18 : 0.08 })
         .addTo(m)
         .bindTooltip(`${id} · ${PARCEL_LABELS[id]?.name ?? ""}`, { sticky: true });
