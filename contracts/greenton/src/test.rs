@@ -34,12 +34,71 @@ fn mint_then_retire() {
     assert_eq!(s.c.balance(&s.owner), 50);
     assert_eq!(s.c.total_supply(), 50);
 
-    let id = s.c.retire(&s.owner, &20, &String::from_str(&s.e, "Empresa SA"));
+    let id = s.c.retire(&s.owner, &p, &202510, &20, &String::from_str(&s.e, "Empresa SA"));
     assert_eq!(id, 0);
     assert_eq!(s.c.balance(&s.owner), 30);
     assert_eq!(s.c.total_supply(), 30);
     assert_eq!(s.c.total_retired(), 20);
-    assert_eq!(s.c.get_retirement(&0).unwrap().amount, 20);
+    let r = s.c.get_retirement(&0).unwrap();
+    assert_eq!(r.amount, 20);
+    assert_eq!(r.parcel, p);
+    assert_eq!(r.period, 202510);
+}
+
+#[test]
+fn each_period_is_its_own_lot() {
+    let s = setup();
+    let p = symbol_short!("IBERA1");
+    s.c.submit_verification(&p, &202509, &720, &10);
+    s.c.submit_verification(&p, &202510, &710, &7);
+
+    let lots = s.c.lots_of(&s.owner);
+    assert_eq!(lots.len(), 2);
+    assert_eq!(s.c.lot_balance(&s.owner, &p, &202509), 10);
+    assert_eq!(s.c.lot_balance(&s.owner, &p, &202510), 7);
+    assert_eq!(s.c.balance(&s.owner), 17);
+
+    let info = s.c.get_lot(&p, &202510).unwrap();
+    assert_eq!(info.minted, 7);
+    assert_eq!(info.ndvi_milli, 710);
+}
+
+#[test]
+fn cannot_spend_one_lot_with_another() {
+    let s = setup();
+    let p = symbol_short!("IBERA1");
+    s.c.submit_verification(&p, &202509, &720, &10);
+    s.c.submit_verification(&p, &202510, &710, &2);
+    let r = s.c.try_retire(&s.owner, &p, &202510, &5, &String::from_str(&s.e, "x"));
+    assert_eq!(r, Err(Ok(Error::InsufficientBalance)));
+    assert_eq!(s.c.balance(&s.owner), 12);
+}
+
+#[test]
+fn transfer_moves_only_the_given_lot() {
+    let s = setup();
+    let p = symbol_short!("IBERA1");
+    s.c.submit_verification(&p, &202509, &720, &10);
+    s.c.submit_verification(&p, &202510, &710, &5);
+    let buyer = Address::generate(&s.e);
+    s.c.transfer(&s.owner, &buyer, &p, &202510, &3);
+
+    assert_eq!(s.c.lot_balance(&buyer, &p, &202510), 3);
+    assert_eq!(s.c.lot_balance(&buyer, &p, &202509), 0);
+    assert_eq!(s.c.lot_balance(&s.owner, &p, &202510), 2);
+    assert_eq!(s.c.lot_balance(&s.owner, &p, &202509), 10);
+    assert_eq!(s.c.lots_of(&buyer).len(), 1);
+}
+
+#[test]
+fn emptied_lot_leaves_the_account_index() {
+    let s = setup();
+    let p = symbol_short!("IBERA1");
+    s.c.submit_verification(&p, &202510, &720, &4);
+    let buyer = Address::generate(&s.e);
+    s.c.transfer(&s.owner, &buyer, &p, &202510, &4);
+    assert_eq!(s.c.lots_of(&s.owner).len(), 0);
+    assert_eq!(s.c.balance(&s.owner), 0);
 }
 
 #[test]
@@ -61,6 +120,7 @@ fn ndvi_drop_freezes_parcel_and_blocks_mint() {
     assert_eq!(s.c.submit_verification(&p, &202510, &420, &10), 0);
     assert!(s.c.get_parcel(&p).frozen);
     assert_eq!(s.c.total_supply(), 10);
+    assert_eq!(s.c.get_lot(&p, &202510), None);
     let r = s.c.try_submit_verification(&p, &202511, &720, &10);
     assert_eq!(r, Err(Ok(Error::ParcelFrozen)));
 }
@@ -76,19 +136,10 @@ fn low_absolute_ndvi_freezes() {
 #[test]
 fn cannot_retire_more_than_balance() {
     let s = setup();
-    s.c.submit_verification(&symbol_short!("IBERA1"), &202510, &700, &5);
-    let r = s.c.try_retire(&s.owner, &6, &String::from_str(&s.e, "x"));
+    let p = symbol_short!("IBERA1");
+    s.c.submit_verification(&p, &202510, &700, &5);
+    let r = s.c.try_retire(&s.owner, &p, &202510, &6, &String::from_str(&s.e, "x"));
     assert_eq!(r, Err(Ok(Error::InsufficientBalance)));
-}
-
-#[test]
-fn transfer_moves_balance() {
-    let s = setup();
-    s.c.submit_verification(&symbol_short!("IBERA1"), &202510, &700, &5);
-    let buyer = Address::generate(&s.e);
-    s.c.transfer(&s.owner, &buyer, &3);
-    assert_eq!(s.c.balance(&buyer), 3);
-    assert_eq!(s.c.balance(&s.owner), 2);
 }
 
 #[test]

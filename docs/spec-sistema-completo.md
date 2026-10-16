@@ -1,223 +1,133 @@
-# Especificación Técnica Completa: Plataforma Dosel (CarbonTrack NEA)
+# Especificación Técnica: Plataforma Dosel (CarbonTrack NEA)
 
-**Versión:** 1.1.0  
+**Versión:** 2.0.0  
 **Fecha:** Octubre 2026  
-**Rama:** `analysis`  
-**Objetivo:** Definir la arquitectura integral, modelo de datos, flujos de usuario, integraciones y decisiones pragmáticas para transformar el prototipo de ideathon en una plataforma de créditos de carbono con verificación satelital sobre Stellar/Soroban y persistencia en Supabase (PostgreSQL + PostGIS).
+**Objetivo:** Definir el núcleo on-chain de Dosel (emisión por lotes verificados por satélite, mercado con compra y quema atómica), el oráculo y la web, sobre Stellar/Soroban. La persistencia en Supabase y el indexador quedan para una fase siguiente.
+
+Decisiones de esta versión: [ADR 0001](adr/0001-lotes-y-compra-retiro-atomico.md). Vocabulario: [`GLOSSARY.md`](../GLOSSARY.md).
 
 ---
 
-## 1. Glosario de Dominio (Ubiquitous Language)
+## 1. Qué cambió respecto de la versión 1.1
 
-| Término | Definición |
-|---|---|
-| **Predio** | Unidad territorial delimitada por un polígono geográfico GPS registrada por un propietario para la conservación de bosque nativo. |
-| **Línea Base** | Medición inicial de vigor vegetal calculada en la primera verificación histórica del predio, usada para detectar caídas anómalas. |
-| **NDVI (Normalized Difference Vegetation Index)** | Índice espectral derivado de reflectancias roja e infrarroja cercana de satélite Sentinel-2 que cuantifica la salud de la cubierta arbórea. |
-| **GreenTon (GTON)** | Token en Soroban equivalente exactamente a 1 tonelada de CO₂ equivalente capturada o protegida de deforestación. |
-| **Congelamiento** | Estado de penalización irreversible por contrato que bloquea permanentemente la emisión de créditos ante caídas de vegetación. |
-| **Retiro** | Quema irreversible de tokens GTON en el contrato inteligente para certificar la compensación de huella de carbono de un beneficiario. |
-| **Oráculo** | Agente automatizado que procesa telemetría satelital y firma verificaciones periódicas directamente hacia el contrato Soroban. |
-| **Indexador de Eventos** | Servicio en segundo plano que escucha los eventos emitidos por el contrato Soroban (`Minted`, `Frozen`, `Retired`) y sincroniza la base de datos en tiempo real. |
-| **Billetera Asistida (Embedded Wallet)** | Cuenta en Stellar generada y custodiada por la plataforma vinculada al correo del productor rural para eliminar la fricción de claves privadas. |
-| **Buy & Retire (Compra y Quema Directa)** | Flujo transaccional donde una empresa adquiere créditos en moneda estable (USDC/XLM) y los destruye en la misma operación, emitiendo su certificado al instante. |
+| Tema | v1.1 | v2.0 |
+|---|---|---|
+| Procedencia | Oferta con `parcel_id` sobre un token sin memoria de predio | Saldos por **lote** (predio, período) en el contrato |
+| Compra | "Buy & Retire" sin decir quién firma la quema | El mercado custodia el lote y quema como titular, en la misma transacción del pago |
+| Billetera | Semilla cifrada en la base de la app | Solo Freighter. La plataforma no guarda claves |
+| Pago | USDC/XLM por Freighter "o pasarela simulada" | Activo de Stellar vía su SAC. XLM en Testnet |
+| Congelamiento | Descripto como irreversible | Como en el contrato: reversible por el admin, no afecta lotes ya emitidos |
+| Metodología | "Verra VM0007, IPCC Tier 2/3" | Factor ilustrativo. No hay metodología certificada |
+| Supabase e indexador | Parte del MVP | Fase siguiente (sección 7) |
 
 ---
 
-## 2. Límites y Responsabilidades: ¿Qué nos corresponde y qué no?
+## 2. Alcance
 
-### 2.1. Lo que SÍ nos corresponde (Alcance de Ingeniería y Producto)
-1. **Infraestructura de Smart Contracts (Soroban):**
-   - Registro inmutable de predios y propietarios.
-   - Reglas de negocio determinísticas (emisión según NDVI, congelamiento automático, quema y trazabilidad).
-   - Módulo de Marketplace directo (listados de venta y compra con liquidación atómica).
-2. **Motor de Oráculo Satelital y Pipeline de Telemetría:**
-   - Ingesta periódica de imágenes satelitales (Sentinel-2 vía STAC API de Microsoft Planetary Computer).
-   - Cálculo de índices de vegetación sobre polígonos arbitrarios (filtrado de nubes y sombras).
-   - Algoritmo de cálculo de tCO₂e respaldado por datos.
-3. **Plataforma Web y Portales:**
-   - **Portal del Propietario:** Carga de polígonos (KML/GeoJSON), onboarding sin fricción cripto y panel de balance de créditos.
-   - **Marketplace / Pasarela de Adquisición:** Compraventa atómica de créditos (`GTON/USDC`) con opción de quema inmediata.
-   - **Portal de Retiro Corporativo:** Quema de créditos con generación de certificados ESG y códigos QR auditables.
-   - **Explorador Público / Transparencia:** Visualizador satelital en tiempo real para ONGs, bancos y entes reguladores.
-4. **Backend e Indexación (Off-Chain en Supabase):**
-   - Base de datos relacional y geoespacial (PostgreSQL 16 + PostGIS).
-   - Indexador de eventos de Stellar para sincronización en tiempo real.
-   - Autenticación (Supabase Auth) y almacenamiento seguro de documentación catastral.
+### 2.1. Nos corresponde
+1. **Contratos Soroban:** registro de predios, emisión por lote según NDVI, congelamiento, retiro, y mercado con compra-quema atómica.
+2. **Oráculo satelital:** Sentinel-2 L2A vía STAC (Planetary Computer en el prototipo), NDVI sobre el bbox del predio y cálculo ilustrativo de tCO₂e.
+3. **Web:** explorador público de predios y lotes, mercado, cuenta del titular (lotes, ofertas, retiro) y registro público de retiros.
 
-### 2.2. Lo que NO nos corresponde (Terceros, Regulación y Mundo Físico)
-1. **Validación Legal de Títulos de Propiedad:** La plataforma no dictamina si una escritura es legítima. Se apoya en colegios notariales, registros de propiedad y escribanos certificados que validan los KML antes de habilitar el registro.
-2. **Creación de Metodologías de Carbono Propias:** Dosel no inventa la fórmula química de absorción. Se parametrizan metodologías avaladas internacionalmente (Verra VM0007, Plan Vivo, IPCC Tier 2/3 para el Chaco Seco y Húmedo).
-3. **Operación de Constelaciones de Satélites:** Se consumen satélites públicos de agencias espaciales (ESA / NASA) o proveedores comerciales de alta resolución (Planet Labs).
+### 2.2. No nos corresponde
+1. **Validación legal de títulos.** Dosel no dictamina si una escritura es legítima.
+2. **Metodología de carbono.** El factor actual (5,5 tCO₂e/ha/año a vigor máximo, escalado por NDVI) es ilustrativo. Una metodología reconocida (Verra, Plan Vivo, IPCC) exige región de referencia, fugas, incertidumbre y buffer, y es un paso posterior.
+3. **Operación de satélites.** Se consumen datos públicos de ESA.
 
 ---
 
-## 3. Arquitectura del Sistema Híbrido (Web2 + Web3)
+## 3. Arquitectura
 
-### 3.1. ¿Por qué conviven Blockchain y Base de Datos?
-* **La Blockchain (Stellar/Soroban)** es el **Banco y la Notaría Pública Inmutable**: garantiza escasez digital, propiedad incorruptible sin intermediarios, reglas matemáticas de congelamiento y certificados de quema que sobreviven incluso si la empresa Dosel desaparece.
-* **La Base de Datos (Supabase / Postgres + PostGIS)** es el **Mostrador de Atención y Archivo Rápido**: almacena polígonos GPS pesados de miles de puntos, PDFs de títulos de propiedad, usuarios, sesiones y permite búsquedas geoespaciales instantáneas en milisegundos.
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        CAPA DE USUARIOS (WEB)                          │
-├────────────────────┬────────────────────┬──────────────────────────────┤
-│ Portal Propietario │    Marketplace     │ Portal Corporativo (Quema)   │
-│ (Login Web2 / KML) │ (Buy & Retire USDC)│ (Certificados ESG y PDF)     │
-└─────────┬──────────┴─────────┬──────────┴──────────────┬───────────────┘
-          │                    │                         │
-          ▼                    ▼                         ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                 BACKEND API & SERVICIOS (SUPABASE)                     │
-├────────────────────────────────────────────────────────────────────────┤
-│ • Supabase Auth: Onboarding con Email/Google + Billetera Asistida      │
-│ • Geoprocesamiento: Validación PostGIS (detección de solapamiento)     │
-│ • Event Listener / Indexador: Sincronizador continuo Soroban -> Postgres│
-└─────────┬──────────────────────────────┬───────────────────────────────┘
-          │                              │
-          ▼                              ▼
-┌──────────────────────────┐   ┌─────────────────────────────────────────┐
-│ BASE DE DATOS (SUPABASE) │   │           ORÁCULO SATELITAL             │
-├──────────────────────────┤   ├─────────────────────────────────────────┤
-│ PostgreSQL 16 + PostGIS  │   │ Ingesta Sentinel-2 (Copernicus / STAC)  │
-│ • Polígonos de predios   │   │ Máscara de nubes + Cálculo NDVI         │
-│ • Documentos catastrales │   │ Invocación on-chain de verificación     │
-│ • Órdenes de marketplace │   └────────────────────┬────────────────────┘
-└──────────────────────────┘                        │
-                                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                      BLOCKCHAIN STELLAR (SOROBAN)                      │
-├────────────────────────────────────────────────────────────────────────┤
-│ • Contrato GreenTon (GTON): Emisión, Congelamiento, Quema (Retire)     │
-│ • Contrato Marketplace Escrow: Listados a precio fijo y swap atómico   │
-│ • Eventos Públicos: Tópicos 'Minted', 'Frozen', 'Retired'              │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  sentinel["Sentinel-2 L2A via STAC"] --> oracle["Oraculo Python"]
+  oracle -->|"submit_verification"| greenton["GreenTon v2"]
+  owner["Freighter del titular"] -->|"register, transfer, retire"| greenton
+  owner -->|"list, cancel"| market["Mercado"]
+  buyer["Freighter del comprador"] -->|"buy_and_retire"| market
+  market -->|"transfer, retire"| greenton
+  market -->|"transfer"| sac["SAC del activo de pago"]
+  greenton --> rpc["Soroban RPC"]
+  market --> rpc
+  rpc --> web["Web Vite y React"]
+  oracle --> evidence["verifications.json"]
+  evidence --> web
 ```
 
+No hay servidor propio. La web lee el estado simulando llamadas contra el RPC y firma con Freighter.
+
 ---
 
-## 4. Persistencia en Supabase: Esquema Relacional Completo
+## 4. GreenTon v2 (`contracts/greenton`)
 
-```sql
--- Extensiones obligatorias
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+- **Lote:** `Lot { parcel: Symbol, period: u32 }`. Lo crea `submit_verification` cuando emite, y guarda `LotInfo { minted, ndvi_milli, ledger_time }`.
+- **Reglas que no cambian:** solo el oráculo emite; una emisión por predio y período, y el período se consume aunque congele; NDVI < 0,400 o caída > 0,150 respecto de la línea base congela y emite 0; `unfreeze` solo lo hace el admin, y la línea base pasa al último NDVI medido.
+- **Token por lotes:** `transfer(from, to, parcel, period, amount)`, `retire(holder, parcel, period, amount, beneficiary) -> u32`, `lot_balance`, `lots_of(who)`, `get_lot`, y `balance(who)` como suma de todos los lotes.
+- **Registro de retiros:** `Retirement { holder, parcel, period, amount, beneficiary, ledger_time }`.
+- **Eventos:** `ParcelRegistered`, `Minted`, `Frozen`, `Transferred` y `Retired`, todos con el lote.
 
--- 1. Usuarios y Organizaciones (Productores y Empresas)
-CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email VARCHAR(255) UNIQUE NOT NULL,
-    stellar_address VARCHAR(56) UNIQUE NOT NULL, -- Billetera pública G...
-    stellar_seed_encrypted TEXT,                 -- Clave cifrada para billetera asistida (MVP)
-    role VARCHAR(32) NOT NULL DEFAULT 'OWNER',   -- 'OWNER', 'BUYER', 'AUDITOR', 'ADMIN'
-    full_name VARCHAR(255),
-    company_name VARCHAR(255),
-    tax_id VARCHAR(64),                          -- CUIT / RUT
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+No implementa la interfaz SEP-41: un saldo sin lote no tiene sentido en este modelo.
 
--- 2. Predios Registrados
-CREATE TABLE parcels (
-    id VARCHAR(32) PRIMARY KEY,                  -- Código legible: 'IMPEN1', 'CHACO1'
-    owner_id UUID REFERENCES users(id),
-    name VARCHAR(255) NOT NULL,
-    province VARCHAR(64) NOT NULL,
-    department VARCHAR(128),
-    geometry GEOMETRY(Polygon, 4326) NOT NULL,   -- Polígono GPS exacto
-    surface_hectares NUMERIC(10, 2) NOT NULL,
-    status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',-- 'ACTIVE', 'FROZEN', 'PENDING_AUDIT'
-    baseline_ndvi NUMERIC(5, 4),
-    last_ndvi NUMERIC(5, 4),
-    total_issued_tco2e NUMERIC(12, 2) DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+---
 
--- Índice geoespacial para consultas y detección de solapamiento
-CREATE INDEX idx_parcels_geometry ON parcels USING GIST (geometry);
+## 5. Mercado (`contracts/market`)
 
--- 3. Telemetría y Verificaciones del Oráculo Satelital
-CREATE TABLE satellite_verifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    parcel_id VARCHAR(32) REFERENCES parcels(id),
-    period_id INTEGER NOT NULL,                  -- Formato AAAAMM (ej. 202603)
-    scene_id VARCHAR(128) NOT NULL,              -- Identificador Sentinel-2 L2A
-    scene_date DATE NOT NULL,
-    cloud_coverage_pct NUMERIC(5, 4),
-    calculated_ndvi NUMERIC(5, 4) NOT NULL,
-    tco2e_issued NUMERIC(12, 2) NOT NULL,
-    stellar_tx_hash VARCHAR(64) NOT NULL,
-    action_taken VARCHAR(32) NOT NULL,           -- 'MINTED', 'FROZEN', 'REJECTED'
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+Se configura al desplegar con el ID de GreenTon y el del SAC del activo de pago.
 
--- 4. Marketplace: Ofertas de Venta y Compras
-CREATE TABLE marketplace_listings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    seller_id UUID REFERENCES users(id),
-    parcel_id VARCHAR(32) REFERENCES parcels(id),
-    amount_tco2e NUMERIC(12, 2) NOT NULL,
-    price_per_ton_usdc NUMERIC(10, 2) NOT NULL,  -- Precio en dólares digitales
-    status VARCHAR(32) NOT NULL DEFAULT 'OPEN',  -- 'OPEN', 'SOLD', 'CANCELLED'
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+| Función | Firma | Qué hace |
+|---|---|---|
+| `list(seller, parcel, period, amount, price_per_ton) -> u32` | Vendedor | Mueve las toneladas del lote a custodia del mercado y crea la oferta |
+| `buy_and_retire(buyer, offer_id, amount, beneficiary) -> u32` | Comprador | Paga `amount × price_per_ton` al vendedor y quema `amount` del lote a nombre de `beneficiary`. Devuelve el ID de la compra |
+| `cancel(seller, offer_id)` | Vendedor de la oferta | Devuelve el remanente y cierra la oferta |
+| `get_offer`, `offer_count`, `get_purchase`, `purchase_count` | Nadie | Lectura |
 
--- 5. Certificados de Retiro y Compensación (Quemas On-Chain)
-CREATE TABLE retirement_certificates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    retirement_index INTEGER NOT NULL,           -- Índice correlativo en Soroban
-    holder_address VARCHAR(56) NOT NULL,
-    beneficiary_name VARCHAR(255) NOT NULL,
-    amount_tco2e NUMERIC(12, 2) NOT NULL,
-    stellar_tx_hash VARCHAR(64) UNIQUE NOT NULL,
-    certificate_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+- **Atomicidad:** el pago y la quema son llamadas entre contratos en la misma transacción. Si cualquiera falla, se revierte todo.
+- **Quién firma la quema:** el mercado llama a `retire` con su propia dirección como titular. Soroban autoriza a un contrato que invoca directamente con su dirección, así que no hace falta otra firma.
+- **Precio:** en la unidad mínima del activo (7 decimales en XLM y USDC). El total va en `i128` con `overflow-checks`.
+- **Registro:** `Purchase { buyer, offer_id, amount, paid, retirement_id }` y el evento `Purchased`. En el retiro de GreenTon, el titular es la dirección del mercado.
+- **Errores:** monto inválido, precio inválido, oferta inexistente, oferta cerrada, cantidad mayor a la disponible, vendedor equivocado.
+
+### Flujo de compra
+
+```mermaid
+sequenceDiagram
+  participant Dueno
+  participant Mercado
+  participant GreenTon
+  participant SAC as ActivoDePago
+  participant Empresa
+  Dueno->>Mercado: list parcel period amount price
+  Mercado->>GreenTon: transfer lote Dueno a Mercado
+  Empresa->>Mercado: buy_and_retire offer amount beneficiary
+  Mercado->>SAC: transfer total Empresa a Dueno
+  Mercado->>GreenTon: retire Mercado lote amount beneficiary
+  GreenTon-->>Mercado: retirement_id
+  Mercado-->>Empresa: purchase_id
 ```
 
----
-
-## 5. Especificación de los Tres Componentes Clave (Decisiones para el MVP)
-
-### 5.1. Componente A: Abstracción de Billetera para el Productor Rural (Web2.5 Onboarding)
-* **La Decisión de Diseño:** Eliminar la barrera de las 24 palabras y la instalación obligatoria de extensiones.
-* **Mecanismo:**
-  1. El productor se registra en la web con su correo electrónico o Google (vía Supabase Auth).
-  2. En el primer inicio de sesión, el backend genera automáticamente un par de claves de Stellar (`Keypair.random()`).
-  3. La clave pública queda asociada a su perfil y la clave privada se almacena cifrada en Supabase.
-  4. Cuando el oráculo verifica el campo, el Smart Contract deposita los `GTON` directamente en su clave pública.
-  5. En su panel web ve su saldo en toneladas y el botón *"Poner a la venta en el marketplace"*.
-  6. **Opción Soberana:** Quien desee auto-custodia puede hacer clic en *"Exportar clave privada"* o vincular su billetera Freighter en cualquier momento.
-
-### 5.2. Componente B: Marketplace Simplificado ("Buy & Retire" Atómico)
-* **La Decisión de Diseño:** Evitar la complejidad técnica de lidiar con libros de órdenes cruzados del DEX clásico en este MVP. En su lugar, implementar una **Venta Directa a Precio Fijo con opción de Quema Inmediata**.
-* **Mecanismo:**
-  1. **Publicación:** El dueño indica cuántas toneladas de su saldo desea vender y fija su precio (ej. 1.000 GTON a \$15 USDC c/u).
-  2. **La Experiencia del Comprador (Empresa):**
-     - La empresa no necesita saber qué es un token ni guardarlo en una billetera.
-     - En el catálogo selecciona: *"Quiero compensar 200 toneladas con bosque nativo de El Impenetrable"*.
-     - Escribe su nombre: *"Empresa Transporte Norte S.A."*.
-     - Paga con testnet USDC o XLM mediante Freighter (o pasarela simulada).
-  3. **Transacción Atómica On-Chain:**
-     El contrato inteligente ejecuta en una sola transacción:
-     - Transfiere el pago al productor rural.
-     - Ejecuta la función `retire` quemando los 200 GTON a nombre de *"Empresa Transporte Norte S.A."*.
-     - Emite el certificado de retiro en el mismo instante.
-
-### 5.3. Componente C: Sincronizador / Indexador de Eventos (Blockchain $\rightarrow$ Supabase)
-* **La Decisión de Diseño:** Un worker liviano en Node.js/TypeScript que consulta periódicamente `getEvents` en la RPC de Soroban.
-* **Mecanismo:**
-  1. El servicio consulta eventos del contrato desde el último bloque analizado (`startLedger`).
-  2. Filtra por tópicos del contrato:
-     - `Minted`: Actualiza `parcels.total_issued_tco2e` y añade un registro a `satellite_verifications`.
-     - `Frozen`: Actualiza `parcels.status = 'FROZEN'`.
-     - `Retired`: Inserta el registro en `retirement_certificates`.
-  3. Esto asegura que la base de datos de Supabase sea un reflejo 100% fidedigno e instantáneo de lo que sucede en la blockchain de Stellar.
+La empresa necesita una cuenta de Stellar con saldo del activo de pago y Freighter. Una pasarela en moneda local queda fuera de alcance: no liquida dentro de una transacción Soroban.
 
 ---
 
-## 6. Plan de Implementación Inmediato
+## 6. Oráculo y web
 
-1. **Paso 1:** Ejecutar la migración inicial en Supabase creando las tablas `users`, `parcels`, `satellite_verifications`, `marketplace_listings` y `retirement_certificates` con soporte PostGIS.
-2. **Paso 2:** Crear el endpoint/formulario de carga de predios (subida de KML / dibujo de polígono con previsualización en mapa).
-3. **Paso 3:** Implementar el módulo de Marketplace ("Buy & Retire") en el frontend.
-4. **Paso 4:** Conectar el indexador de eventos para reflejar las quemas y emisiones en Supabase.
+- **Oráculo** (`oracle/run.py`): sin cambios de interfaz. `register` da de alta los predios y `verify` reporta NDVI y toneladas. Cada entrada de `web/public/verifications.json` se identifica por predio y período, es decir, por lote. La evidencia del contrato v1 está archivada en `web/public/verifications.v1.json`.
+- **Web** (`web/src`):
+  - Explorador de predios con evidencia satelital por lote.
+  - Mercado: ofertas abiertas con lote, NDVI del lote, toneladas, precio y un aviso si el predio quedó congelado después.
+  - Mi cuenta: lotes propios, publicar y cancelar ofertas, retirar de un lote propio.
+  - Registro de retiros con el lote de origen.
+  - Los IDs de los contratos llegan por `VITE_GREENTON_ID`, `VITE_MARKET_ID` y `VITE_PAYMENT_ASSET_ID`.
+
+---
+
+## 7. Fase siguiente: persistencia e indexación
+
+Fuera de esta versión. Restricciones para cuando se encare:
+
+- **La cadena es la fuente.** Postgres es un caché de lectura. El indexador usa `getEvents` con un cursor de ledger durable y aplica cada evento una sola vez (clave: hash de la transacción más índice del evento).
+- **La metadata de la escena no viaja en los eventos.** La escribe el oráculo junto con el hash de la transacción. Una lectura rechazada se guarda sin hash.
+- **Geometría:** `geography(MultiPolygon, 4326)`, con hectáreas calculadas con `ST_Area` y no cargadas a mano. El solape con otros predios se valida antes de `register_parcel`.
+- **Estado inicial del predio:** pendiente de validación documental, no activo.
+- **Claves:** nunca en la base. Si hace falta custodia asistida, un KMS o passkeys.
+- **Auth y permisos:** Supabase Auth con RLS en todas las tablas expuestas.

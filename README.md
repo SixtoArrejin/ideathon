@@ -21,7 +21,9 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 
 ## Datos on-chain (Testnet)
 
-- **Contrato:** [`CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG)
+GreenTon v2 (lotes por predio y período) y el contrato de mercado todavía no están desplegados: los pasos están en [`DEPLOY.md`](DEPLOY.md). Lo que sigue es la versión 1, la que se presentó en la hackathon. Su evidencia satelital está archivada en `web/public/verifications.v1.json`.
+
+- **Contrato v1:** [`CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG)
 - **Deploy tx:** [`92b4b8ea…8805b3`](https://stellar.expert/explorer/testnet/tx/92b4b8ea31272159b4be552208a00cd045a5915d333367d23a3d9584088805b3)
 - **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD`
 
@@ -41,17 +43,29 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 Sentinel-2 L2A (Planetary Computer, STAC)
         │  NDVI medio del bbox (oracle/ndvi.py)
         ▼
-Oráculo (Python) ──firma──► Contrato Soroban GreenTon ◄──firma── Freighter (propietario / empresa)
+Oráculo (Python) ──firma──► GreenTon v2 ◄──firma── Freighter (propietario)
                               • register_parcel     • submit_verification (solo oráculo)
-                              • retire (quema)      • unfreeze (solo admin/auditor)
+                              • transfer / retire por lote   • unfreeze (solo admin/auditor)
                                      ▲
+                                     │ transfer (custodia) · retire (quema)
+                              Mercado ◄──firma── Freighter (propietario: list/cancel · empresa: buy_and_retire)
+                                     │ transfer del pago (SAC de XLM / USDC)
+                                     ▼
                           Web (Vite + React + Stellar SDK) lee el estado por RPC
 ```
 
-Reglas del contrato (`contracts/greenton/src/lib.rs`):
-- Solo el oráculo emite, **una vez por predio y período** (no se vende el mismo período dos veces).
-- NDVI < 0,400 **o** caída > 0,150 respecto de la línea base ⇒ el predio se **congela** y no emite.
-- `retire` quema, reduce el suministro y guarda quién compensó; `unfreeze` lo hace un admin (auditor humano).
+Reglas de GreenTon (`contracts/greenton/src/lib.rs`):
+- Solo el oráculo emite, **una vez por predio y período**. Cada emisión crea un **lote** (predio, período).
+- Saldos, transferencias y retiros son **por lote**: cada tonelada retirada apunta al predio y a la verificación de origen.
+- NDVI < 0,400 **o** caída > 0,150 respecto de la línea base ⇒ el predio se **congela** y no emite lotes nuevos.
+- `retire` quema, reduce el suministro y guarda quién compensó y de qué lote; `unfreeze` lo hace un admin (auditor humano).
+
+Reglas del mercado (`contracts/market/src/lib.rs`):
+- Publicar una oferta pone el lote en custodia del mercado.
+- `buy_and_retire` paga al vendedor y quema las toneladas a nombre del beneficiario **en una sola transacción**. Si falla el pago, no se quema nada.
+- Solo el vendedor cancela, y recupera el remanente.
+
+Decisiones: [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
 
 ## Cómo correrlo
 
@@ -59,13 +73,16 @@ Requisitos: Rust + `wasm32v1-none`, [Stellar CLI](https://developers.stellar.org
 
 ```sh
 # Contrato
-cargo test                       # 7 tests
-stellar contract build           # -> target/wasm32v1-none/release/greenton.wasm
+cargo test                       # greenton + market
+stellar contract build           # -> target/wasm32v1-none/release/{greenton,market}.wasm
 
-# Deploy en testnet
+# Deploy en testnet (detalle en DEPLOY.md)
 stellar keys generate admin --network testnet --fund   # idem: oracle, owner
 stellar contract deploy --wasm target/wasm32v1-none/release/greenton.wasm --source admin \
   --network testnet --alias greenton -- --admin $(stellar keys address admin) --oracle $(stellar keys address oracle)
+stellar contract deploy --wasm target/wasm32v1-none/release/market.wasm --source admin \
+  --network testnet --alias market -- --greenton <ID que imprimió el deploy de greenton> \
+  --payment_asset $(stellar contract id asset --asset native --network testnet)
 
 # Oráculo
 python3 -m venv oracle/.venv && oracle/.venv/bin/pip install pystac-client planetary-computer rasterio numpy
@@ -74,10 +91,11 @@ cd oracle
 .venv/bin/python run.py verify TACOP1 202603 "2026-02-01/2026-03-31"
 
 # Web
-cd web && npm install && npm run dev      # editar src/config.ts con tu CONTRACT_ID
+cd web && npm install
+VITE_GREENTON_ID=C... VITE_MARKET_ID=C... npm run dev
 ```
 
-Para retirar desde la web, usar Freighter en **Testnet** con una cuenta que tenga GTON.
+Para publicar, comprar o retirar desde la web, usar Freighter en **Testnet**. Para comprar, la cuenta necesita XLM (Friendbot).
 
 ## Limitaciones (dichas de frente)
 
@@ -86,4 +104,6 @@ Para retirar desde la web, usar Freighter en **Testnet** con una cuenta que teng
 - Los "períodos" 2019 y 2026 usan la misma estación (feb–mar) para comparar; 2019 funciona como línea base histórica, no como siete años de emisión real.
 - TACOP1 se eligió por su caída de NDVI dentro de la zona donde Greenpeace documentó desmontes; **no está confirmado como desmonte ilegal**.
 - **Sin entrevistas a usuarios.** La validación es documental y técnica: ver [`docs/validacion.md`](docs/validacion.md).
+- **Congelar no bloquea lotes viejos**: las toneladas emitidas antes de la caída se pueden seguir ofertando. La web lo advierte en la oferta.
+- GreenTon v2 no implementa la interfaz estándar de token (SEP-41): las billeteras genéricas no muestran los saldos por lote.
 - Testnet únicamente.

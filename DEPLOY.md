@@ -5,13 +5,13 @@ Para quien haga el deploy y la entrega final. Todo lo de abajo ya está probado 
 ## 1. Verificar que todo funciona en local
 
 ```sh
-cargo test                                            # 7 tests del contrato
+cargo test                                            # tests de greenton y market
 python3 -m unittest discover -s oracle/tests          # tests del oráculo (con el venv activo o con oracle/.venv/bin/python)
 cd web && npm install && npm run build                # tiene que terminar sin errores
 npm run dev                                           # http://localhost:5173
 ```
 
-En la web tienen que verse: 3 predios en el mapa satelital, 60.739 GTON en circulación, 1.000 retiradas y `TACOP1` en rojo como congelado.
+Con la demo v1 de la hackathon se veían: 3 predios en el mapa satelital, 60.739 GTON en circulación, 1.000 retiradas y `TACOP1` en rojo como congelado. La web actual necesita GreenTon v2 y el mercado desplegados (sección 5). Sin `VITE_GREENTON_ID` y `VITE_MARKET_ID`, muestra un aviso de configuración.
 
 ## 2. Desplegar la web (estática)
 
@@ -46,6 +46,42 @@ La web lee todo directo del RPC de Stellar Testnet. No necesita variables de ent
 
 La clave secreta de `owner` vive en la máquina de quien hizo el setup: `stellar keys show owner`. Es una cuenta de testnet sin valor. Si se decide publicarla, ponerla en el README **solo cuando el repo sea público** y entendiendo que cualquiera podrá mover esos GTON.
 
-## 5. Redeploy del contrato (solo si hace falta)
+## 5. Deploy de GreenTon v2 y del mercado
 
-Cambiar el contrato implica un **nuevo ID**: hay que actualizar `web/src/config.ts`, el README y la entrega, y volver a correr `oracle/run.py register` y `verify`. Si el contrato actual funciona, no tocarlo.
+GreenTon v2 (lotes) es un contrato nuevo: **nuevo ID**, y los predios se vuelven a registrar y verificar. Los GTON del contrato v1 no se migran. Ver [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
+
+La web de este repo ya habla con v2. **No publicarla** con la demo v1 de la hackathon: no tiene las funciones por lote.
+
+```sh
+# 1. Compilar y probar
+cargo test
+stellar contract build
+
+# 2. GreenTon v2 (anotar el ID que imprime)
+stellar contract deploy --wasm target/wasm32v1-none/release/greenton.wasm --source admin \
+  --network testnet --alias greenton -- \
+  --admin $(stellar keys address admin) --oracle $(stellar keys address oracle)
+
+# 3. SAC de XLM nativo (activo de pago en Testnet)
+stellar contract id asset --asset native --network testnet
+
+# 4. Mercado (anotar el ID que imprime)
+stellar contract deploy --wasm target/wasm32v1-none/release/market.wasm --source admin \
+  --network testnet --alias market -- --greenton <ID de GreenTon v2> --payment_asset <ID del SAC>
+
+# 5. Predios y verificaciones (con el venv del oráculo)
+cd oracle
+.venv/bin/python run.py register
+.venv/bin/python run.py verify IMPEN1 201903 "2019-02-01/2019-03-31"
+.venv/bin/python run.py verify IMPEN1 202603 "2026-02-01/2026-03-31"
+# idem CHACO1 y TACOP1
+```
+
+`run.py` usa el alias `greenton` (o `GREENTON_CONTRACT`) y escribe la evidencia en `web/public/verifications.json`, que arranca vacío. La de v1 queda en `verifications.v1.json`.
+
+6. **Web:** definir `VITE_GREENTON_ID` y `VITE_MARKET_ID` (en `web/.env.local` o en las variables del hosting). `VITE_PAYMENT_ASSET_ID` es opcional: por defecto es el SAC de XLM en Testnet. Sin los dos IDs, la web muestra un aviso de configuración.
+7. **Prueba manual:**
+   1. Con Freighter en la cuenta `owner`, en **Mi cuenta**, publicar una oferta de un lote de IMPEN1.
+   2. Con otra cuenta fondeada por Friendbot, en **Mercado**, comprar y quemar una parte.
+   3. Comprobar que el XLM llegó al dueño, que el retiro figura con el lote IMPEN1 y que el suministro bajó.
+8. Actualizar el README con los IDs y los hashes nuevos.

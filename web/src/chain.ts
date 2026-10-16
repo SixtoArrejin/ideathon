@@ -1,42 +1,49 @@
 import {
-  Account, Contract, TransactionBuilder, BASE_FEE, rpc, scValToNative, nativeToScVal, Address,
+  Account, Contract, TransactionBuilder, BASE_FEE, rpc, scValToNative, nativeToScVal, Address, xdr,
 } from "@stellar/stellar-sdk";
 import { signTransaction } from "@stellar/freighter-api";
-import { CONTRACT_ID, PASSPHRASE, READ_ACCOUNT, RPC_URL } from "./config";
+import { CONTRACT_ID, MARKET_ID, PASSPHRASE, READ_ACCOUNT, RPC_URL } from "./config";
 
 const server = new rpc.Server(RPC_URL);
-const contract = new Contract(CONTRACT_ID);
+const greenton = () => new Contract(CONTRACT_ID);
+const market = () => new Contract(MARKET_ID);
 
 export type Parcel = {
   owner: string; hectares: number; bbox: string; baseline_ndvi_milli: number;
   last_ndvi_milli: number; frozen: boolean; issued_tco2e: bigint;
 };
-export type Retirement = { holder: string; amount: bigint; beneficiary: string; ledger_time: bigint };
+export type Retirement = {
+  holder: string; parcel: string; period: number; amount: bigint; beneficiary: string; ledger_time: bigint;
+};
+export type LotBalance = { parcel: string; period: number; amount: bigint };
+export type LotInfo = { minted: bigint; ndvi_milli: number; ledger_time: bigint };
+export type Offer = {
+  seller: string; parcel: string; period: number; available: bigint; price_per_ton: bigint; open: boolean;
+};
+export type Purchase = { buyer: string; offer_id: number; amount: bigint; paid: bigint; retirement_id: number };
 
-async function read<T>(method: string, ...args: import("@stellar/stellar-sdk").xdr.ScVal[]): Promise<T> {
+const sym = (s: string) => nativeToScVal(s, { type: "symbol" });
+const u32 = (n: number) => nativeToScVal(n, { type: "u32" });
+const i128 = (n: bigint) => nativeToScVal(n, { type: "i128" });
+const str = (s: string) => nativeToScVal(s, { type: "string" });
+const addr = (a: string) => new Address(a).toScVal();
+
+async function read<T>(c: Contract, method: string, ...args: xdr.ScVal[]): Promise<T> {
   const tx = new TransactionBuilder(new Account(READ_ACCOUNT, "0"), { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
-    .addOperation(contract.call(method, ...args)).setTimeout(30).build();
+    .addOperation(c.call(method, ...args)).setTimeout(30).build();
   const sim = await server.simulateTransaction(tx);
   if (rpc.Api.isSimulationError(sim)) throw new Error(sim.error);
   return scValToNative((sim as rpc.Api.SimulateTransactionSuccessResponse).result!.retval) as T;
 }
 
-export const totalSupply = () => read<bigint>("total_supply");
-export const totalRetired = () => read<bigint>("total_retired");
-export const balanceOf = (a: string) => read<bigint>("balance", new Address(a).toScVal());
-export const getParcel = (id: string) => read<Parcel>("get_parcel", nativeToScVal(id, { type: "symbol" }));
-export const retirementCount = () => read<number>("retirement_count");
-export const getRetirement = (id: number) => read<Retirement | null>("get_retirement", nativeToScVal(id, { type: "u32" }));
-
-/** Retira (quema) créditos firmando con Freighter. Devuelve el hash de la transacción. */
-export async function retire(holder: string, amount: bigint, beneficiary: string): Promise<string> {
-  const acct = await server.getAccount(holder);
+/** Prepara, firma con Freighter, envía y espera la confirmación. Devuelve el hash. */
+async function submit(source: string, c: Contract, method: string, ...args: xdr.ScVal[]): Promise<string> {
+  const acct = await server.getAccount(source);
   const built = new TransactionBuilder(acct, { fee: BASE_FEE, networkPassphrase: PASSPHRASE })
-    .addOperation(contract.call("retire",
-      new Address(holder).toScVal(), nativeToScVal(amount, { type: "i128" }), nativeToScVal(beneficiary, { type: "string" })))
+    .addOperation(c.call(method, ...args))
     .setTimeout(60).build();
   const prepared = await server.prepareTransaction(built);
-  const signed = await signTransaction(prepared.toXDR(), { networkPassphrase: PASSPHRASE, address: holder });
+  const signed = await signTransaction(prepared.toXDR(), { networkPassphrase: PASSPHRASE, address: source });
   if (signed.error) throw new Error(String(signed.error.message ?? signed.error));
   const tx = TransactionBuilder.fromXDR(signed.signedTxXdr, PASSPHRASE);
   const sent = await server.sendTransaction(tx);
@@ -49,3 +56,34 @@ export async function retire(holder: string, amount: bigint, beneficiary: string
   }
   throw new Error("Timeout esperando confirmación");
 }
+
+// ---- GreenTon ----
+export const totalSupply = () => read<bigint>(greenton(), "total_supply");
+export const totalRetired = () => read<bigint>(greenton(), "total_retired");
+export const balanceOf = (a: string) => read<bigint>(greenton(), "balance", addr(a));
+export const lotsOf = (a: string) => read<LotBalance[]>(greenton(), "lots_of", addr(a));
+export const getLot = (parcel: string, period: number) => read<LotInfo | null>(greenton(), "get_lot", sym(parcel), u32(period));
+export const getParcel = (id: string) => read<Parcel>(greenton(), "get_parcel", sym(id));
+export const retirementCount = () => read<number>(greenton(), "retirement_count");
+export const getRetirement = (id: number) => read<Retirement | null>(greenton(), "get_retirement", u32(id));
+
+/** Retira (quema) toneladas de un lote propio. */
+export const retire = (holder: string, parcel: string, period: number, amount: bigint, beneficiary: string) =>
+  submit(holder, greenton(), "retire", addr(holder), sym(parcel), u32(period), i128(amount), str(beneficiary));
+
+// ---- Mercado ----
+export const offerCount = () => read<number>(market(), "offer_count");
+export const getOffer = (id: number) => read<Offer | null>(market(), "get_offer", u32(id));
+export const purchaseCount = () => read<number>(market(), "purchase_count");
+export const getPurchase = (id: number) => read<Purchase | null>(market(), "get_purchase", u32(id));
+
+/** Publica una oferta: el lote pasa a custodia del mercado. */
+export const list = (seller: string, parcel: string, period: number, amount: bigint, pricePerTon: bigint) =>
+  submit(seller, market(), "list", addr(seller), sym(parcel), u32(period), i128(amount), i128(pricePerTon));
+
+/** Paga al vendedor y quema las toneladas a nombre del beneficiario, en una sola transacción. */
+export const buyAndRetire = (buyer: string, offerId: number, amount: bigint, beneficiary: string) =>
+  submit(buyer, market(), "buy_and_retire", addr(buyer), u32(offerId), i128(amount), str(beneficiary));
+
+export const cancel = (seller: string, offerId: number) =>
+  submit(seller, market(), "cancel", addr(seller), u32(offerId));

@@ -1,5 +1,8 @@
 """Oráculo GreenTon: calcula NDVI satelital y lo reporta al contrato Soroban.
 
+Cada verificación que emite crea un lote (predio, período) en GreenTon v2. La entrada del
+log de evidencia se identifica por ese mismo par, así la web cruza escena y lote.
+
 Uso:
   python run.py register               # registra los predios de parcels.json (firma el dueño)
   python run.py verify <PREDIO> <periodo AAAAMM> <AAAA-MM-DD/AAAA-MM-DD>

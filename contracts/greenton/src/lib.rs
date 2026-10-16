@@ -2,12 +2,14 @@
 //! GreenTon — créditos de carbono verificados por satélite (CarbonTrack NEA).
 //!
 //! 1 GreenTon = 1 tCO2e. Solo el oráculo puede emitir, una vez por predio y período.
+//! Cada emisión crea un lote (predio, período): saldos, transferencias y retiros son por lote,
+//! así que cualquier tonelada se puede rastrear hasta la verificación satelital que la originó.
 //! Si el NDVI cae bajo el umbral absoluto o respecto de la línea base, el predio se congela.
 //! Retirar (retire) quema los tokens de forma permanente y deja registro público del beneficiario.
 
 use soroban_sdk::{
     contract, contracterror, contractevent, contractimpl, contracttype, Address, Env, String,
-    Symbol,
+    Symbol, Vec,
 };
 
 /// NDVI en milésimas (0.612 => 612).
@@ -41,10 +43,36 @@ pub struct Parcel {
     pub issued_tco2e: i128,
 }
 
+/// Lote: las toneladas emitidas para un predio en un período.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Lot {
+    pub parcel: Symbol,
+    pub period: u32,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LotInfo {
+    pub minted: i128,
+    pub ndvi_milli: i32,
+    pub ledger_time: u64,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LotBalance {
+    pub parcel: Symbol,
+    pub period: u32,
+    pub amount: i128,
+}
+
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Retirement {
     pub holder: Address,
+    pub parcel: Symbol,
+    pub period: u32,
     pub amount: i128,
     pub beneficiary: String,
     pub ledger_time: u64,
@@ -57,7 +85,10 @@ enum Key {
     Supply,
     Retired,
     RetireCount,
-    Balance(Address),
+    Balance(Address, Lot),
+    /// Lotes con saldo positivo de una cuenta.
+    Lots(Address),
+    LotInfo(Lot),
     Parcel(Symbol),
     Issued(Symbol, u32),
     Retirement(u32),
@@ -88,9 +119,22 @@ pub struct Frozen {
 }
 
 #[contractevent]
+pub struct Transferred {
+    #[topic]
+    pub from: Address,
+    #[topic]
+    pub to: Address,
+    pub parcel: Symbol,
+    pub period: u32,
+    pub amount: i128,
+}
+
+#[contractevent]
 pub struct Retired {
     #[topic]
     pub holder: Address,
+    pub parcel: Symbol,
+    pub period: u32,
     pub amount: i128,
     pub beneficiary: String,
 }
@@ -98,12 +142,50 @@ pub struct Retired {
 #[contract]
 pub struct GreenTon;
 
-fn read_balance(e: &Env, a: &Address) -> i128 {
-    e.storage().persistent().get(&Key::Balance(a.clone())).unwrap_or(0)
+fn read_lots(e: &Env, a: &Address) -> Vec<Lot> {
+    e.storage()
+        .persistent()
+        .get(&Key::Lots(a.clone()))
+        .unwrap_or(Vec::new(e))
 }
 
-fn write_balance(e: &Env, a: &Address, v: i128) {
-    e.storage().persistent().set(&Key::Balance(a.clone()), &v);
+fn read_balance(e: &Env, a: &Address, lot: &Lot) -> i128 {
+    e.storage()
+        .persistent()
+        .get(&Key::Balance(a.clone(), lot.clone()))
+        .unwrap_or(0)
+}
+
+/// Escribe el saldo de un lote y mantiene el índice `Lots` de la cuenta.
+fn write_balance(e: &Env, a: &Address, lot: &Lot, v: i128) {
+    let key = Key::Balance(a.clone(), lot.clone());
+    let mut lots = read_lots(e, a);
+    let pos = lots.first_index_of(lot);
+    if v == 0 {
+        e.storage().persistent().remove(&key);
+        if let Some(i) = pos {
+            lots.remove(i);
+            e.storage().persistent().set(&Key::Lots(a.clone()), &lots);
+        }
+    } else {
+        e.storage().persistent().set(&key, &v);
+        if pos.is_none() {
+            lots.push_back(lot.clone());
+            e.storage().persistent().set(&Key::Lots(a.clone()), &lots);
+        }
+    }
+}
+
+fn debit(e: &Env, a: &Address, lot: &Lot, amount: i128) -> Result<(), Error> {
+    if amount <= 0 {
+        return Err(Error::InvalidAmount);
+    }
+    let bal = read_balance(e, a, lot);
+    if bal < amount {
+        return Err(Error::InsufficientBalance);
+    }
+    write_balance(e, a, lot, bal - amount);
+    Ok(())
 }
 
 fn read_parcel(e: &Env, id: &Symbol) -> Result<Parcel, Error> {
@@ -121,7 +203,7 @@ impl GreenTon {
         e.storage().instance().set(&Key::Oracle, &oracle);
     }
 
-    // ---- Metadatos estilo SEP-41 ----
+    // ---- Metadatos ----
     pub fn name(e: Env) -> String {
         String::from_str(&e, "GreenTon")
     }
@@ -162,7 +244,7 @@ impl GreenTon {
 
     // ---- Verificación satelital (solo oráculo) ----
     /// El oráculo reporta el NDVI del período y las toneladas verificadas.
-    /// Emite al propietario salvo que el predio esté (o quede) congelado.
+    /// Emite al propietario un lote (predio, período) salvo que el predio esté (o quede) congelado.
     /// Devuelve las toneladas emitidas.
     pub fn submit_verification(
         e: Env,
@@ -203,7 +285,14 @@ impl GreenTon {
         let owner = p.owner.clone();
         p.issued_tco2e += tco2e;
         e.storage().persistent().set(&Key::Parcel(parcel.clone()), &p);
-        write_balance(&e, &owner, read_balance(&e, &owner) + tco2e);
+        let lot = Lot { parcel: parcel.clone(), period };
+        e.storage().persistent().set(
+            &Key::LotInfo(lot.clone()),
+            &LotInfo { minted: tco2e, ndvi_milli, ledger_time: e.ledger().timestamp() },
+        );
+        if tco2e > 0 {
+            write_balance(&e, &owner, &lot, read_balance(&e, &owner, &lot) + tco2e);
+        }
         let supply = read_i128(&e, &Key::Supply) + tco2e;
         e.storage().instance().set(&Key::Supply, &supply);
         Minted { parcel, period, amount: tco2e, ndvi_milli }.publish(&e);
@@ -224,9 +313,31 @@ impl GreenTon {
         Ok(())
     }
 
-    // ---- Token ----
+    // ---- Token por lotes ----
+    /// Saldo total de la cuenta, sumando todos sus lotes.
     pub fn balance(e: Env, who: Address) -> i128 {
-        read_balance(&e, &who)
+        let mut total = 0;
+        for lot in read_lots(&e, &who).iter() {
+            total += read_balance(&e, &who, &lot);
+        }
+        total
+    }
+
+    pub fn lot_balance(e: Env, who: Address, parcel: Symbol, period: u32) -> i128 {
+        read_balance(&e, &who, &Lot { parcel, period })
+    }
+
+    pub fn lots_of(e: Env, who: Address) -> Vec<LotBalance> {
+        let mut out = Vec::new(&e);
+        for lot in read_lots(&e, &who).iter() {
+            let amount = read_balance(&e, &who, &lot);
+            out.push_back(LotBalance { parcel: lot.parcel, period: lot.period, amount });
+        }
+        out
+    }
+
+    pub fn get_lot(e: Env, parcel: Symbol, period: u32) -> Option<LotInfo> {
+        e.storage().persistent().get(&Key::LotInfo(Lot { parcel, period }))
     }
 
     pub fn total_supply(e: Env) -> i128 {
@@ -237,36 +348,34 @@ impl GreenTon {
         read_i128(&e, &Key::Retired)
     }
 
-    pub fn transfer(e: Env, from: Address, to: Address, amount: i128) -> Result<(), Error> {
+    pub fn transfer(
+        e: Env,
+        from: Address,
+        to: Address,
+        parcel: Symbol,
+        period: u32,
+        amount: i128,
+    ) -> Result<(), Error> {
         from.require_auth();
-        if amount <= 0 {
-            return Err(Error::InvalidAmount);
-        }
-        let fb = read_balance(&e, &from);
-        if fb < amount {
-            return Err(Error::InsufficientBalance);
-        }
-        write_balance(&e, &from, fb - amount);
-        write_balance(&e, &to, read_balance(&e, &to) + amount);
+        let lot = Lot { parcel: parcel.clone(), period };
+        debit(&e, &from, &lot, amount)?;
+        write_balance(&e, &to, &lot, read_balance(&e, &to, &lot) + amount);
+        Transferred { from, to, parcel, period, amount }.publish(&e);
         Ok(())
     }
 
-    /// Retira (quema) créditos para compensar huella. Irreversible y auditable.
+    /// Retira (quema) créditos de un lote para compensar huella. Irreversible y auditable.
     pub fn retire(
         e: Env,
         holder: Address,
+        parcel: Symbol,
+        period: u32,
         amount: i128,
         beneficiary: String,
     ) -> Result<u32, Error> {
         holder.require_auth();
-        if amount <= 0 {
-            return Err(Error::InvalidAmount);
-        }
-        let bal = read_balance(&e, &holder);
-        if bal < amount {
-            return Err(Error::InsufficientBalance);
-        }
-        write_balance(&e, &holder, bal - amount);
+        let lot = Lot { parcel: parcel.clone(), period };
+        debit(&e, &holder, &lot, amount)?;
         let supply = read_i128(&e, &Key::Supply) - amount;
         e.storage().instance().set(&Key::Supply, &supply);
         let retired = read_i128(&e, &Key::Retired) + amount;
@@ -275,13 +384,15 @@ impl GreenTon {
         let id: u32 = e.storage().instance().get(&Key::RetireCount).unwrap_or(0);
         let rec = Retirement {
             holder: holder.clone(),
+            parcel: parcel.clone(),
+            period,
             amount,
             beneficiary: beneficiary.clone(),
             ledger_time: e.ledger().timestamp(),
         };
         e.storage().persistent().set(&Key::Retirement(id), &rec);
         e.storage().instance().set(&Key::RetireCount, &(id + 1));
-        Retired { holder, amount, beneficiary }.publish(&e);
+        Retired { holder, parcel, period, amount, beneficiary }.publish(&e);
         Ok(id)
     }
 

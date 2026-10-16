@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getParcel, getRetirement, retirementCount, totalRetired, totalSupply, type Parcel, type Retirement } from "./chain";
-import { CONTRACT_ID, EXPERT, PARCEL_IDS } from "./config";
-import { fmt, ndvi, PARCEL_LABELS, short } from "./lib";
+import {
+  getLot, getOffer, getParcel, getRetirement, lotsOf, offerCount, retirementCount, totalRetired, totalSupply,
+  type LotBalance, type LotInfo, type Parcel, type Retirement,
+} from "./chain";
+import { CONFIGURED, CONTRACT_ID, EXPERT, MARKET_ID, PARCEL_IDS } from "./config";
+import { fmt, lotLabel, ndvi, PARCEL_LABELS, period, short } from "./lib";
+import { connectFreighter, errText } from "./wallet";
 import ParcelMap from "./components/ParcelMap";
 import NdviChart from "./components/NdviChart";
 import RetirePanel from "./components/RetirePanel";
+import MarketPanel, { type OpenOffer } from "./components/MarketPanel";
+import OwnerPanel from "./components/OwnerPanel";
 import Logo from "./components/Logo";
 
 type Verification = {
@@ -24,11 +30,30 @@ function CopyId() {
 }
 
 export default function App() {
+  if (!CONFIGURED) {
+    return (
+      <main className="wrap">
+        <section className="intro">
+          <h1>Falta configurar los contratos.</h1>
+          <p>Definí <code>VITE_GREENTON_ID</code> y <code>VITE_MARKET_ID</code> con los IDs de GreenTon v2 y del mercado en Testnet (ver DEPLOY.md) y volvé a compilar.</p>
+        </section>
+      </main>
+    );
+  }
+  return <Dashboard />;
+}
+
+function Dashboard() {
   const [supply, setSupply] = useState<bigint | null>(null);
   const [retired, setRetired] = useState<bigint | null>(null);
   const [parcels, setParcels] = useState<Record<string, Parcel>>({});
   const [ver, setVer] = useState<Verification[]>([]);
   const [rets, setRets] = useState<Retirement[]>([]);
+  const [offers, setOffers] = useState<OpenOffer[]>([]);
+  const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
+  const [wallet, setWallet] = useState("");
+  const [lots, setLots] = useState<LotBalance[]>([]);
+  const [walletErr, setWalletErr] = useState("");
   const [selected, setSelected] = useState(() => {
     const h = window.location.hash.slice(1);
     return PARCEL_IDS.includes(h) ? h : PARCEL_IDS[0];
@@ -37,26 +62,52 @@ export default function App() {
 
   const load = useCallback(async () => {
     try {
-      const [s, r, n] = await Promise.all([totalSupply(), totalRetired(), retirementCount()]);
+      const [s, r, n, oc] = await Promise.all([totalSupply(), totalRetired(), retirementCount(), offerCount()]);
       setSupply(s); setRetired(r);
       const ps = await Promise.all(PARCEL_IDS.map(async (id) => [id, await getParcel(id)] as const));
       setParcels(Object.fromEntries(ps));
       const list = await Promise.all(Array.from({ length: Number(n) }, (_, i) => getRetirement(i)));
       setRets(list.filter((x): x is Retirement => !!x).reverse());
+      const os = await Promise.all(Array.from({ length: Number(oc) }, async (_, id) => {
+        const o = await getOffer(id);
+        return o ? { ...o, id } : null;
+      }));
+      const open = os.filter((o): o is OpenOffer => !!o && o.open);
+      setOffers(open);
+      const keys = [...new Set(open.map((o) => `${o.parcel}:${o.period}`))];
+      const infos = await Promise.all(keys.map(async (k) => {
+        const [parcel, p] = k.split(":");
+        return [k, await getLot(parcel, Number(p))] as const;
+      }));
+      setLotInfo(Object.fromEntries(infos));
       setErr("");
-    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
+    } catch (e) { setErr(errText(e)); }
   }, []);
+
+  const loadWallet = useCallback(async () => {
+    if (!wallet) return;
+    try { setLots(await lotsOf(wallet)); } catch { setLots([]); }
+  }, [wallet]);
+
+  const refresh = useCallback(() => { load(); loadWallet(); }, [load, loadWallet]);
 
   useEffect(() => {
     load();
     fetch("/verifications.json").then((r) => r.json()).then(setVer).catch(() => {});
   }, [load]);
+  useEffect(() => { loadWallet(); }, [loadWallet]);
+
+  async function connect() {
+    setWalletErr("");
+    try { setWallet(await connectFreighter()); } catch (e) { setWalletErr(errText(e)); }
+  }
 
   const onSelect = useCallback((id: string) => {
     setSelected(id);
     history.replaceState(null, "", `#${id}`);
   }, []);
   const frozen = useMemo(() => Object.values(parcels).filter((p) => p.frozen).length, [parcels]);
+  const myOffers = useMemo(() => offers.filter((o) => o.seller === wallet), [offers, wallet]);
   const p = parcels[selected];
   const evidence = ver.filter((v) => v.parcel === selected);
   const meta = PARCEL_LABELS[selected];
@@ -74,6 +125,11 @@ export default function App() {
             <span className="muted">Contrato</span>
             <a className="mono" href={`${EXPERT}/contract/${CONTRACT_ID}`} target="_blank" rel="noreferrer" title={CONTRACT_ID}>{short(CONTRACT_ID, 5)}</a>
             <CopyId />
+            <span className="muted">Mercado</span>
+            <a className="mono" href={`${EXPERT}/contract/${MARKET_ID}`} target="_blank" rel="noreferrer" title={MARKET_ID}>{short(MARKET_ID, 5)}</a>
+            {wallet
+              ? <span className="mono" title={wallet}>{short(wallet, 4)}</span>
+              : <button className="copy" onClick={connect}>Conectar Freighter</button>}
           </div>
         </div>
       </header>
@@ -81,7 +137,7 @@ export default function App() {
       <main className="wrap">
         <section className="intro">
           <h1>El bosque, verificado desde arriba.</h1>
-          <p>Dosel es la copa del bosque vista desde arriba, justo lo que mide el satélite. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
+          <p>Dosel es la copa del bosque vista desde arriba, justo lo que mide el satélite. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite un lote de GreenTon por predio y período, o congela el predio si el bosque cayó. Quien compensa compra y quema toneladas de un lote concreto, y queda registrado en Stellar de qué predio salieron.</p>
           <dl className="figures">
             <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}<small>GTON · 1 = 1 tCO₂e</small></dd></div>
             <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}<small>tCO₂e quemadas</small></dd></div>
@@ -90,6 +146,7 @@ export default function App() {
         </section>
 
         {err && <p className="msg crit" role="alert">No se pudo leer la red de Stellar: {err}</p>}
+        {walletErr && <p className="msg crit" role="alert">{walletErr}</p>}
 
         <section className="explorer" aria-label="Predios verificados">
           <div className="mapcol">
@@ -122,13 +179,13 @@ export default function App() {
                   <div><dt>Variación NDVI</dt><dd className="mono">{(p.last_ndvi_milli - p.baseline_ndvi_milli >= 0 ? "+" : "−") + ndvi(Math.abs(p.last_ndvi_milli - p.baseline_ndvi_milli))}</dd></div>
                 </dl>
 
-                <h3>Evidencia satelital</h3>
+                <h3>Evidencia satelital por lote</h3>
                 <div className="tablewrap"><table>
-                  <thead><tr><th>Período (feb–mar)</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
+                  <thead><tr><th>Lote (feb–mar)</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
                   <tbody>
                     {evidence.map((v, i) => (
                       <tr key={v.tx}>
-                        <td className="mono">{String(v.period).replace(/(\d{4})(\d{2})/, "$1-$2")}{i === 0 && <span className="tagbase">línea base</span>}</td>
+                        <td className="mono">{period(v.period)}{i === 0 && <span className="tagbase">línea base</span>}</td>
                         <td className="mono">{v.ndvi.toFixed(3).replace(".", ",")}</td>
                         <td><a href={STAC_ITEM(v.scene)} target="_blank" rel="noreferrer" className="mono">{v.scene_date}</a></td>
                         <td>{Number(v.minted) > 0 ? <span className="ok">+{fmt(Number(v.minted))} GTON</span> : <span className="crit">Sin emisión</span>}</td>
@@ -147,16 +204,33 @@ export default function App() {
           <h2>Qué decide el contrato</h2>
           <ol>
             <li><b>Solo emite el oráculo.</b> El propietario registra el predio con su polígono, pero no puede acuñar.</li>
-            <li><b>Un período, una emisión.</b> Una vez verificado un período de un predio, no se puede repetir.</li>
+            <li><b>Un período, un lote.</b> Cada verificación crea un lote propio del predio y del período, y no se puede repetir.</li>
             <li><b>El bosque tiene que seguir en pie.</b> Si el NDVI baja de 0,40 o cae más de 0,15 desde la línea base, el predio se congela y no emite.</li>
-            <li><b>Retirar es irreversible.</b> Quemar descuenta del suministro y guarda quién compensó.</li>
+            <li><b>Comprar es compensar.</b> El mercado cobra al comprador, paga al vendedor y quema las toneladas del lote en la misma transacción.</li>
+            <li><b>Retirar es irreversible.</b> Quemar descuenta del suministro y guarda quién compensó y de qué lote.</li>
           </ol>
+        </section>
+
+        <section className="mercado" aria-label="Mercado">
+          <h2>Mercado: comprar y quemar</h2>
+          <MarketPanel wallet={wallet} offers={offers} parcels={parcels} lotInfo={lotInfo} onDone={refresh} />
         </section>
 
         <section className="retiro">
           <div>
-            <h2>Retirar créditos</h2>
-            <RetirePanel onDone={load} />
+            <h2>Mi cuenta</h2>
+            {wallet ? (
+              <>
+                <OwnerPanel wallet={wallet} lots={lots} myOffers={myOffers} onDone={refresh} />
+                <h3>Retirar de un lote propio</h3>
+                <RetirePanel wallet={wallet} lots={lots} onDone={refresh} />
+              </>
+            ) : (
+              <>
+                <p className="lede">Conectá una billetera Freighter en Testnet para ver tus lotes, publicar ofertas o retirar.</p>
+                <button className="btn" onClick={connect}>Conectar Freighter</button>
+              </>
+            )}
           </div>
           <div>
             <h2>Registro de retiros</h2>
@@ -166,7 +240,11 @@ export default function App() {
                 <li key={i}>
                   <b className="mono">{fmt(r.amount)} tCO₂e</b>
                   <span>{r.beneficiary}</span>
-                  <span className="muted mono">{short(r.holder, 4)} · {new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}</span>
+                  <span className="muted mono">
+                    <a href={`#${r.parcel}`} onClick={() => onSelect(r.parcel)}>{lotLabel(r.parcel, r.period)}</a>
+                    {" · "}{r.holder === MARKET_ID ? "vía mercado" : short(r.holder, 4)}
+                    {" · "}{new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}
+                  </span>
                 </li>
               ))}
             </ul>
