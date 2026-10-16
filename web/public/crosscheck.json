@@ -1,0 +1,83 @@
+{
+  "IMPEN1": {
+    "2017": {
+      "clases": {
+        "árboles": 0.956,
+        "pastizal": 0.044
+      },
+      "pixeles": 287744
+    },
+    "2019": {
+      "clases": {
+        "árboles": 0.948,
+        "urbano": 0.0,
+        "pastizal": 0.052
+      },
+      "pixeles": 287744
+    },
+    "2023": {
+      "clases": {
+        "agua": 0.0,
+        "árboles": 0.944,
+        "pastizal": 0.056
+      },
+      "pixeles": 287744
+    }
+  },
+  "CHACO1": {
+    "2017": {
+      "clases": {
+        "agua": 0.001,
+        "árboles": 0.598,
+        "cultivos": 0.017,
+        "urbano": 0.008,
+        "pastizal": 0.377
+      },
+      "pixeles": 287076
+    },
+    "2019": {
+      "clases": {
+        "agua": 0.001,
+        "árboles": 0.617,
+        "veg. inundada": 0.001,
+        "cultivos": 0.007,
+        "urbano": 0.008,
+        "pastizal": 0.366
+      },
+      "pixeles": 287076
+    },
+    "2023": {
+      "clases": {
+        "agua": 0.0,
+        "árboles": 0.607,
+        "cultivos": 0.056,
+        "urbano": 0.011,
+        "pastizal": 0.325
+      },
+      "pixeles": 287076
+    }
+  },
+  "TACOP1": {
+    "2017": {
+      "clases": {
+        "árboles": 0.173,
+        "cultivos": 0.827
+      },
+      "pixeles": 101505
+    },
+    "2019": {
+      "clases": {
+        "árboles": 0.176,
+        "cultivos": 0.824
+      },
+      "pixeles": 101505
+    },
+    "2023": {
+      "clases": {
+        "árboles": 0.176,
+        "cultivos": 0.824
+      },
+      "pixeles": 101505
+    }
+  }
+}

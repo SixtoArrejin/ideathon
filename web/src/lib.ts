@@ -31,5 +31,5 @@ export const NDVI_MAX_DROP = 0.15;
 export const PARCEL_LABELS: Record<string, { name: string; zone: string }> = {
   IMPEN1: { name: "Impenetrable", zone: "Chaco · bosque seco" },
   CHACO1: { name: "Parque Nacional Chaco", zone: "Chaco · bosque húmedo" },
-  TACOP1: { name: "Predio en desmonte", zone: "Taco Pozo / Copo · Chaco" },
+  TACOP1: { name: "Lote agrícola", zone: "Taco Pozo / Copo · Chaco" },
 };

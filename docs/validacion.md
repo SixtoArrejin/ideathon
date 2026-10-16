@@ -29,14 +29,41 @@ El oráculo (`oracle/`) calculó NDVI real de Sentinel-2 L2A sobre tres predios 
 |---|---|---|---|
 | IMPEN1 (Impenetrable) | 0,768 | 0,769 | emite en ambos períodos |
 | CHACO1 (P.N. Chaco) | 0,771 | 0,773 | emite en ambos períodos |
-| TACOP1 (lote en la zona Taco Pozo/Copo) | 0,814 | 0,612 | **congelado**, sin emisión |
+| TACOP1 (lote agrícola en la zona Taco Pozo/Copo) | 0,814 | 0,612 | **congelado**, sin emisión |
 
-Las transacciones están en el README. TACOP1 es un lote elegido porque su NDVI cae; **no está confirmado como desmonte ilegal**.
+Las transacciones están en el README.
+
+### 3b. Cruce con una fuente independiente (y lo que reveló)
+
+`oracle/crosscheck.py` compara el NDVI con la cobertura anual del suelo a 10 m de Impact Observatory (`io-lulc-annual-v02`, Planetary Computer, 2017–2023). Es otra fuente, otro método y otra institución. Resultado, fracción del polígono clasificada como árboles:
+
+| Predio | 2017 | 2019 | 2023 | Lectura |
+|---|---|---|---|---|
+| IMPEN1 | 96 % | 95 % | 94 % | bosque estable, coincide con el NDVI |
+| CHACO1 | 60 % | 62 % | 61 % | estable (resto: pastizal), coincide con el NDVI |
+| TACOP1 | 17 % | 18 % | 18 % | **ya era 83 % cultivos en 2017 y no cambió** |
+
+**TACOP1 no es una tala.** Es tierra agrícola: la caída de NDVI de 0,814 a 0,612 es estacionalidad del cultivo (dos fechas distintas del ciclo), no pérdida de bosque. El contrato hizo lo que dice su regla (NDVI cayó más de 0,15, se congela), pero la regla dio un **falso positivo** para lo que queremos proteger. La web lo muestra: junto a cada predio hay un panel de cobertura que marca la discrepancia y pide revisión humana, que es el rol del `unfreeze` del auditor.
+
+**El caso contrario también existe (falso negativo).** Buscamos bloques de ~900 ha con bosque casi pleno en 2017 y casi sin árboles en 2023 según la cobertura (zona Taco Pozo–Copo). En los que revisamos, el NDVI de febrero–marzo de 2026 no cayó, y en tres de cuatro incluso subió:
+
+| Bloque (lon/lat mínimos y máximos) | Árboles 2017 → 2023 | NDVI 2019 → 2026 |
+|---|---|---|
+| −61,578 −25,593 / −61,548 −25,566 | 100 % → 21 % | 0,754 → 0,797 |
+| −61,602 −26,135 / −61,571 −26,108 | 95 % → 14 % | 0,790 → 0,837 |
+| −61,645 −25,837 / −61,615 −25,810 | 88 % → 8 % | 0,748 → 0,870 |
+| −62,322 −26,095 / −62,292 −26,068 | 96 % → 15 % | 0,759 → 0,673 (−0,085, bajo el umbral de 0,15) |
+
+Un cultivo verde en plena estación húmeda tiene NDVI alto. **Con NDVI solo, una conversión de monte a cultivo puede pasar sin congelar.** Estos bloques no se registraron en el contrato; se documentan como el límite real de la señal.
+
+Consecuencia de diseño, todavía no implementada en el contrato: usar la cobertura del suelo como segunda señal del oráculo (congelar o alertar si los árboles caen, aunque el NDVI no baje) y exigir revisión humana cuando las dos señales discrepen.
 
 Durante el desarrollo se detectó y corrigió un error real: sin aplicar el offset de reflectancia (−0,1) de las escenas de baseline ≥ 04.00, el NDVI de 2026 salía artificialmente ~0,3 más bajo que el de 2019 incluso en un parque nacional.
 
 ## 4. Lo que falta validar (honestidad)
 
+- Una segunda señal de pérdida de bosque dentro del contrato (hoy solo el NDVI decide el congelamiento).
+- Cobertura del suelo más reciente que 2023 para los períodos nuevos.
 - Entrevistas con propietarios, ONG/INTA y empresas compradoras.
 - Que el factor NDVI→tCO₂e (simplificado) se reemplace por una metodología reconocida (p. ej. VCS/IPCC).
 - Que un auditor humano real participe del ciclo (`unfreeze` está pensado para eso).

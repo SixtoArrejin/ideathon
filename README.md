@@ -4,7 +4,7 @@
 Proyecto para el IDEATHON Neatech 2026 · Stellar Track.
 
 **No confiamos en la palabra del dueño del campo.** Un oráculo calcula el NDVI real de Sentinel-2 sobre el polígono GPS del predio
-y solo con ese dato el contrato emite GreenTon (1 GTON = 1 tCO₂e). Si el NDVI cae (tala, incendio), el contrato **congela el predio y frena la emisión**.
+y solo con ese dato el contrato emite GreenTon (1 GTON = 1 tCO₂e). Si el NDVI cae, el contrato **congela el predio y frena la emisión**, y la web contrasta esa señal con un mapa de cobertura del suelo independiente.
 Quien compensa su huella **retira (quema)** los tokens: nadie puede revenderlos y el registro es público.
 
 ## Qué se construyó (declaración de originalidad)
@@ -108,7 +108,8 @@ Para publicar, comprar o retirar desde la web, usar Freighter en **Testnet**. Pa
 - **Oráculo de clave única**: centralizado en esta versión. Siguiente paso: multi-oráculo/umbral y auditores certificados.
 - **Factor NDVI→tCO₂e simplificado e ilustrativo** (5,5 tCO₂e/ha/año a vigor máximo, escalado por NDVI). **No es una metodología certificada** (Verra/IPCC).
 - Los "períodos" 2019 y 2026 usan la misma estación (feb–mar) para comparar; 2019 funciona como línea base histórica, no como siete años de emisión real.
-- TACOP1 se eligió por su caída de NDVI dentro de la zona donde Greenpeace documentó desmontes; **no está confirmado como desmonte ilegal**.
+- **TACOP1 no es una tala.** Lo elegimos por su caída de NDVI, pero la cobertura del suelo (Impact Observatory) muestra que ya era ~83 % cultivos en 2017: es un **falso positivo** del NDVI por estacionalidad agrícola. Lo conservamos porque ilustra el congelamiento y la necesidad de un auditor.
+- **El NDVI solo puede no detectar una tala**: una conversión de monte a cultivo medida en estación húmeda tiene NDVI alto. Documentamos cuatro bloques donde la cobertura muestra pérdida de bosque y el NDVI no cae (`docs/validacion.md`, sección 3b). La segunda señal todavía no está en el contrato.
 - **Sin entrevistas a usuarios.** La validación es documental y técnica: ver [`docs/validacion.md`](docs/validacion.md).
 - **Congelar no bloquea lotes viejos**: las toneladas emitidas antes de la caída se pueden seguir ofertando. La web lo advierte en la oferta.
 - GreenTon v2 no implementa la interfaz estándar de token (SEP-41): las billeteras genéricas no muestran los saldos por lote.

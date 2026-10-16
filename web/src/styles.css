@@ -9,6 +9,7 @@
   --crit: #b3361f;
   --focus: #1d5c3e;
   --btn-ink: #f8faf6;
+  --lc-tree: #1d5c3e; --lc-crop: #b8892b; --lc-grass: #a3ad6a; --lc-other: #b7c0b6;
   --display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
   --body: "IBM Plex Sans", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -17,12 +18,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0e1511; --surface: #151e18; --ink: #e4ece6; --muted: #93a298; --line: #28352d;
-    --ok: #5dbe8a; --crit: #f0795f; --focus: #5dbe8a; --btn-ink: #0e1511; color-scheme: dark;
+    --ok: #5dbe8a; --crit: #f0795f; --focus: #5dbe8a; --btn-ink: #0e1511; --lc-tree: #5dbe8a; --lc-crop: #d9a441; --lc-grass: #8d9a52; --lc-other: #3d4a41; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0e1511; --surface: #151e18; --ink: #e4ece6; --muted: #93a298; --line: #28352d;
-  --ok: #5dbe8a; --crit: #f0795f; --focus: #5dbe8a; --btn-ink: #0e1511; color-scheme: dark;
+  --ok: #5dbe8a; --crit: #f0795f; --focus: #5dbe8a; --btn-ink: #0e1511; --lc-tree: #5dbe8a; --lc-crop: #d9a441; --lc-grass: #8d9a52; --lc-other: #3d4a41; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -120,3 +121,13 @@ tr.is-selected td { background: var(--line); }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 .leaflet-container { font-family: var(--body); }
 .contract .muted { font-size: 0.82rem; }
+
+.cover { display: grid; gap: 8px; }
+.covbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.covbars li { display: grid; grid-template-columns: 3rem minmax(0, 1fr) 7.5rem; gap: 10px; align-items: center; font-size: 0.82rem; }
+.covbars .stack { display: flex; height: 16px; border-radius: 2px; overflow: hidden; background: var(--line); gap: 2px; }
+.covbars .stack i { display: block; height: 100%; }
+.covbars .val { text-align: right; }
+.cover .legend i { border-radius: 2px; }
+.small { font-size: 0.78rem; margin: 0; }
+@media (max-width: 480px) { .covbars li { grid-template-columns: 2.6rem minmax(0, 1fr); } .covbars .val { display: none; } }

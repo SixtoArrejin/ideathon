@@ -34,7 +34,7 @@ El contrato concentra las reglas que el dueño del campo no puede saltarse. Cuat
 
 La web no tiene backend. Lee el contrato por el RPC público de Testnet y muestra, por cada verificación, el enlace a la escena satelital y a la transacción en Stellar Expert. La evidencia de que “el bosque sigue” o “el bosque cayó” queda fuera del PDF del propietario.
 
-En la demo, IMPEN1 y CHACO1 mantienen el NDVI entre 2019 y 2026 y emiten. TACOP1 cae de 0,814 a 0,612, el contrato lo congela y emite cero. TACOP1 está en la zona donde Greenpeace documentó desmontes. **Esa caída de NDVI no está confirmada como desmonte ilegal.**
+En la demo, IMPEN1 y CHACO1 mantienen el NDVI entre 2019 y 2026 y emiten. TACOP1 cae de 0,814 a 0,612, el contrato lo congela y emite cero. **TACOP1 es tierra agrícola, no una tala**: la cobertura del suelo de Impact Observatory lo muestra como ~83 % cultivos desde 2017, así que es un falso positivo del NDVI. Ver [`validacion.md`](validacion.md), sección 3b.
 
 ## Dónde el diseño se detiene
 

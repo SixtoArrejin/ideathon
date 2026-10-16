@@ -8,6 +8,7 @@ import { fmt, lotLabel, ndvi, PARCEL_LABELS, period, short } from "./lib";
 import { connectFreighter, errText } from "./wallet";
 import ParcelMap from "./components/ParcelMap";
 import NdviChart from "./components/NdviChart";
+import CoverCheck, { type Cover } from "./components/CoverCheck";
 import RetirePanel from "./components/RetirePanel";
 import MarketPanel, { type OpenOffer } from "./components/MarketPanel";
 import OwnerPanel from "./components/OwnerPanel";
@@ -48,6 +49,7 @@ function Dashboard() {
   const [retired, setRetired] = useState<bigint | null>(null);
   const [parcels, setParcels] = useState<Record<string, Parcel>>({});
   const [ver, setVer] = useState<Verification[]>([]);
+  const [cover, setCover] = useState<Cover>({});
   const [rets, setRets] = useState<Retirement[]>([]);
   const [offers, setOffers] = useState<OpenOffer[]>([]);
   const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
@@ -94,6 +96,7 @@ function Dashboard() {
   useEffect(() => {
     load();
     fetch("/verifications.json").then((r) => r.json()).then(setVer).catch(() => {});
+    fetch("/crosscheck.json").then((r) => r.json()).then(setCover).catch(() => {});
   }, [load]);
   useEffect(() => { loadWallet(); }, [loadWallet]);
 
@@ -137,7 +140,7 @@ function Dashboard() {
       <main className="wrap">
         <section className="intro">
           <h1>El bosque, verificado desde arriba.</h1>
-          <p>Dosel es la copa del bosque vista desde arriba, justo lo que mide el satélite. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite un lote de GreenTon por predio y período, o congela el predio si el bosque cayó. Quien compensa compra y quema toneladas de un lote concreto, y queda registrado en Stellar de qué predio salieron.</p>
+          <p>Dosel es la copa del bosque vista desde arriba, justo lo que mide el satélite. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite un lote de GreenTon por predio y período, o congela el predio si el vigor de la vegetación cayó. Esa señal se cruza con un mapa de cobertura del suelo independiente y, si no coinciden, decide una persona. Quien compensa compra y quema toneladas de un lote concreto, y queda registrado en Stellar de qué predio salieron.</p>
           <dl className="figures">
             <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}<small>GTON · 1 = 1 tCO₂e</small></dd></div>
             <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}<small>tCO₂e quemadas</small></dd></div>
@@ -179,6 +182,9 @@ function Dashboard() {
                   <div><dt>Variación NDVI</dt><dd className="mono">{(p.last_ndvi_milli - p.baseline_ndvi_milli >= 0 ? "+" : "−") + ndvi(Math.abs(p.last_ndvi_milli - p.baseline_ndvi_milli))}</dd></div>
                 </dl>
 
+                <h3>Cobertura del suelo, fuente independiente</h3>
+                <CoverCheck data={cover[selected]} frozen={p.frozen} />
+
                 <h3>Evidencia satelital por lote</h3>
                 <div className="tablewrap"><table>
                   <thead><tr><th>Lote (feb–mar)</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
@@ -205,7 +211,7 @@ function Dashboard() {
           <ol>
             <li><b>Solo emite el oráculo.</b> El propietario registra el predio con su polígono, pero no puede acuñar.</li>
             <li><b>Un período, un lote.</b> Cada verificación crea un lote propio del predio y del período, y no se puede repetir.</li>
-            <li><b>El bosque tiene que seguir en pie.</b> Si el NDVI baja de 0,40 o cae más de 0,15 desde la línea base, el predio se congela y no emite.</li>
+            <li><b>La vegetación tiene que sostenerse.</b> Si el NDVI baja de 0,40 o cae más de 0,15 desde la línea base, el predio se congela y no emite. Solo el auditor puede levantarlo. El NDVI solo no distingue una tala de un cultivo estacional, por eso la web lo contrasta con la cobertura del suelo.</li>
             <li><b>Comprar es compensar.</b> El mercado cobra al comprador, paga al vendedor y quema las toneladas del lote en la misma transacción.</li>
             <li><b>Retirar es irreversible.</b> Quemar descuenta del suministro y guarda quién compensó y de qué lote.</li>
           </ol>
