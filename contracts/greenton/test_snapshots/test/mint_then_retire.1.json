@@ -77,6 +77,12 @@
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
                 },
                 {
+                  "symbol": "IBERA1"
+                },
+                {
+                  "u32": 202510
+                },
+                {
                   "i128": "20"
                 },
                 {
@@ -178,6 +184,26 @@
                   },
                   {
                     "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                  },
+                  {
+                    "map": [
+                      {
+                        "key": {
+                          "symbol": "parcel"
+                        },
+                        "val": {
+                          "symbol": "IBERA1"
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "period"
+                        },
+                        "val": {
+                          "u32": 202510
+                        }
+                      }
+                    ]
                   }
                 ]
               },
@@ -214,6 +240,123 @@
               "durability": "persistent",
               "val": {
                 "bool": true
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 4095
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+              "key": {
+                "vec": [
+                  {
+                    "symbol": "LotInfo"
+                  },
+                  {
+                    "map": [
+                      {
+                        "key": {
+                          "symbol": "parcel"
+                        },
+                        "val": {
+                          "symbol": "IBERA1"
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "period"
+                        },
+                        "val": {
+                          "u32": 202510
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              "durability": "persistent",
+              "val": {
+                "map": [
+                  {
+                    "key": {
+                      "symbol": "ledger_time"
+                    },
+                    "val": {
+                      "u64": "0"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "minted"
+                    },
+                    "val": {
+                      "i128": "50"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "ndvi_milli"
+                    },
+                    "val": {
+                      "i32": 720
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 4095
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+              "key": {
+                "vec": [
+                  {
+                    "symbol": "Lots"
+                  },
+                  {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                  }
+                ]
+              },
+              "durability": "persistent",
+              "val": {
+                "vec": [
+                  {
+                    "map": [
+                      {
+                        "key": {
+                          "symbol": "parcel"
+                        },
+                        "val": {
+                          "symbol": "IBERA1"
+                        }
+                      },
+                      {
+                        "key": {
+                          "symbol": "period"
+                        },
+                        "val": {
+                          "u32": 202510
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           },
@@ -355,6 +498,22 @@
                     },
                     "val": {
                       "u64": "0"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "parcel"
+                    },
+                    "val": {
+                      "symbol": "IBERA1"
+                    }
+                  },
+                  {
+                    "key": {
+                      "symbol": "period"
+                    },
+                    "val": {
+                      "u32": 202510
                     }
                   }
                 ]

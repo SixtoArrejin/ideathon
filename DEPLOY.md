@@ -11,7 +11,7 @@ cd web && npm install && npm run build                # tiene que terminar sin e
 npm run dev                                           # http://localhost:5173
 ```
 
-Con la demo v1 de la hackathon se veían: 3 predios en el mapa satelital, 60.739 GTON en circulación, 1.000 retiradas y `TACOP1` en rojo como congelado. La web actual necesita GreenTon v2 y el mercado desplegados (sección 5). Sin `VITE_GREENTON_ID` y `VITE_MARKET_ID`, muestra un aviso de configuración.
+Con los contratos actuales en Testnet se ve: 3 predios en el mapa satelital, 61.239 GTON en circulación, 500 retiradas, `TACOP1` en rojo como congelado y dos ofertas en el mercado (una con compra parcial). Los IDs ya vienen por defecto en `web/src/config.ts`; `VITE_GREENTON_ID` y `VITE_MARKET_ID` solo hacen falta si se redespliega.
 
 ## 2. Desplegar la web (estática)
 
@@ -27,7 +27,7 @@ Importante: al preguntar si se vincula un repositorio de Git, responder según s
 
 **Netlify:** `npx netlify deploy --dir=dist --prod` después de `npm run build`.
 
-La web lee todo directo del RPC de Stellar Testnet. No necesita variables de entorno ni backend. `public/verifications.json` trae la evidencia satelital (escenas y hashes de transacción).
+La web lee todo directo del RPC de Stellar Testnet. No necesita variables de entorno ni backend: los IDs de los contratos están por defecto en `web/src/config.ts`. `public/verifications.json` trae la evidencia satelital (escenas y hashes de transacción).
 
 ## 3. Antes de la entrega (cierre viernes 16/10, 19:00)
 
@@ -50,7 +50,7 @@ La clave secreta de `owner` vive en la máquina de quien hizo el setup: `stellar
 
 GreenTon v2 (lotes) es un contrato nuevo: **nuevo ID**, y los predios se vuelven a registrar y verificar. Los GTON del contrato v1 no se migran. Ver [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
 
-La web de este repo ya habla con v2. **No publicarla** con la demo v1 de la hackathon: no tiene las funciones por lote.
+**Ya está desplegado y verificado en Testnet** (IDs y hashes en el README). Esta sección es para repetirlo o redesplegar. Si se redespliega, actualizar `web/src/config.ts` y el README.
 
 ```sh
 # 1. Compilar y probar
@@ -79,7 +79,7 @@ cd oracle
 
 `run.py` usa el alias `greenton` (o `GREENTON_CONTRACT`) y escribe la evidencia en `web/public/verifications.json`, que arranca vacío. La de v1 queda en `verifications.v1.json`.
 
-6. **Web:** definir `VITE_GREENTON_ID` y `VITE_MARKET_ID` (en `web/.env.local` o en las variables del hosting). `VITE_PAYMENT_ASSET_ID` es opcional: por defecto es el SAC de XLM en Testnet. Sin los dos IDs, la web muestra un aviso de configuración.
+6. **Web:** los IDs actuales ya están por defecto en `web/src/config.ts`. Para otros, definir `VITE_GREENTON_ID` y `VITE_MARKET_ID` (en `web/.env.local` o en las variables del hosting). `VITE_PAYMENT_ASSET_ID` es opcional: por defecto es el SAC de XLM en Testnet.
 7. **Prueba manual:**
    1. Con Freighter en la cuenta `owner`, en **Mi cuenta**, publicar una oferta de un lote de IMPEN1.
    2. Con otra cuenta fondeada por Friendbot, en **Mercado**, comprar y quemar una parte.

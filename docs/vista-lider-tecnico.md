@@ -1,6 +1,6 @@
 # Dosel — vista de líder técnico
 
-> Este documento describe la **versión 1**, la que está desplegada y se presentó en la hackathon. La versión 2 (saldos por lote y mercado con compra-quema atómica) está en el código, pero todavía no está desplegada: ver [ADR 0001](adr/0001-lotes-y-compra-retiro-atomico.md) y [`spec-sistema-completo.md`](spec-sistema-completo.md).
+> Este documento describe la **versión 1**, la que está desplegada y se presentó en la hackathon. La versión 2 (saldos por lote y mercado con compra-quema atómica) ya está desplegada en Testnet (IDs en el README): ver [ADR 0001](adr/0001-lotes-y-compra-retiro-atomico.md) y [`spec-sistema-completo.md`](spec-sistema-completo.md).
 
 Documento para entender el sistema, las apuestas y los límites sin recorrer cada función. El detalle operativo de deploy está en [`DEPLOY.md`](../DEPLOY.md). La evidencia del problema está en [`docs/validacion.md`](validacion.md).
 

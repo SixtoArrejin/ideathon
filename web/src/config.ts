@@ -1,8 +1,8 @@
 const env = import.meta.env;
 
-// IDs de GreenTon v2 y del mercado: se fijan al desplegar (ver DEPLOY.md).
-export const CONTRACT_ID: string = env.VITE_GREENTON_ID ?? "";
-export const MARKET_ID: string = env.VITE_MARKET_ID ?? "";
+// IDs de GreenTon v2 y del mercado en Testnet (ver DEPLOY.md). Se pueden pisar con VITE_GREENTON_ID / VITE_MARKET_ID.
+export const CONTRACT_ID: string = env.VITE_GREENTON_ID ?? "CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q";
+export const MARKET_ID: string = env.VITE_MARKET_ID ?? "CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD";
 // SAC de XLM nativo en Testnet: `stellar contract id asset --asset native --network testnet`.
 export const PAYMENT_ASSET_ID: string =
   env.VITE_PAYMENT_ASSET_ID ?? "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC";

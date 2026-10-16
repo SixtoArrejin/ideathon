@@ -21,21 +21,27 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 
 ## Datos on-chain (Testnet)
 
-GreenTon v2 (lotes por predio y período) y el contrato de mercado todavía no están desplegados: los pasos están en [`DEPLOY.md`](DEPLOY.md). Lo que sigue es la versión 1, la que se presentó en la hackathon. Su evidencia satelital está archivada en `web/public/verifications.v1.json`.
-
-- **Contrato v1:** [`CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG)
-- **Deploy tx:** [`92b4b8ea…8805b3`](https://stellar.expert/explorer/testnet/tx/92b4b8ea31272159b4be552208a00cd045a5915d333367d23a3d9584088805b3)
-- **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD`
+- **GreenTon v2:** [`CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q`](https://stellar.expert/explorer/testnet/contract/CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q) · deploy [fc7cc8e0…](https://stellar.expert/explorer/testnet/tx/fc7cc8e023414ae301d0b290985e219447f08272af97b1d48fa77191e2d0352c)
+- **Mercado:** [`CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD`](https://stellar.expert/explorer/testnet/contract/CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD) · deploy [00d7de79…](https://stellar.expert/explorer/testnet/tx/00d7de791c0a8a821aad800cb02d28155c393629243d88b51a68f8efca01dbbb)
+- **Activo de pago:** XLM nativo vía su SAC `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
+- **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD` · comprador de la demo `GAUJHWH757JYECRFIDJYU4UEPZCTJ7JHR2BZFSR3DEUSCMEFW7E5RXIT`
 
 | Acción | Tx |
 |---|---|
-| IMPEN1 · 2019 (línea base) NDVI 0,768 → emite | [f196f947…](https://stellar.expert/explorer/testnet/tx/f196f947889a919742a63f2d780345377352c12095bfcbd43c5f510f36bf44ec) |
-| IMPEN1 · 2026 NDVI 0,769 → emite | [f367cafc…](https://stellar.expert/explorer/testnet/tx/f367cafccb188c623d41ff2874710c6f3859dae0dc279395f8f4ec6b0feec2a2) |
-| CHACO1 · 2019 → emite | [cbc0bb53…](https://stellar.expert/explorer/testnet/tx/cbc0bb533df8599137b835b74f9f94a4159ba4b7ed35a4b54d0985182104e53b) |
-| CHACO1 · 2026 → emite | [acf4e2c5…](https://stellar.expert/explorer/testnet/tx/acf4e2c55f8e729b501767535fa2698c9ab42819848d3b964c38e27df5b9acdd) |
-| TACOP1 · 2019 NDVI 0,814 → emite | [329e3a04…](https://stellar.expert/explorer/testnet/tx/329e3a0420e33ee42f094635627445639979181330a5c356ef7118b64b84bbc7) |
-| **TACOP1 · 2026 NDVI 0,612 → CONGELA, emisión 0** | [cc1170f6…](https://stellar.expert/explorer/testnet/tx/cc1170f6ee4781e030030e3a10397da0789010acf36ea9f4f73bebe707a03134) |
-| Retiro (quema) de 1.000 GTON por "Empresa Demo SA" | [d6155183…](https://stellar.expert/explorer/testnet/tx/d61551837219af213a6de4712112de50fb57b33754a0af615e0d22a7b1a7302f) |
+| Alta de los predios IMPEN1, CHACO1 y TACOP1 | [63624b2f…](https://stellar.expert/explorer/testnet/tx/63624b2fe6794ac4c74efedc303035ffb85ebfa0220bf7739db7ec11ec894ecb) · [fd76713d…](https://stellar.expert/explorer/testnet/tx/fd76713dafb0acc1fcbe74ac223527d6eb4d3c14c11aed65da73e362d53ed27f) · [1c07bce2…](https://stellar.expert/explorer/testnet/tx/1c07bce24e2aefd47ba720a42323916eb7d4c88952cb37e18dd5aa10ec5fc79b) |
+| IMPEN1 · lote 2019 (línea base) NDVI 0,768 → emite 14.082 | [170c4e1c…](https://stellar.expert/explorer/testnet/tx/170c4e1cb8463c889d9656be0e684918bdb76e90ab5db2ac32aec79b7418a401) |
+| IMPEN1 · lote 2026 NDVI 0,769 → emite 14.099 | [13afc813…](https://stellar.expert/explorer/testnet/tx/13afc813e20179548ac99c5dd228c4864d31929f9f1880082b0da9c90ebd32f1) |
+| CHACO1 · lote 2019 → emite 13.997 | [e613adff…](https://stellar.expert/explorer/testnet/tx/e613adff9db81927cccca133df7b4ec60574a8ec1d0a4171725aed51a6d18805) |
+| CHACO1 · lote 2026 → emite 14.083 | [6a4e274a…](https://stellar.expert/explorer/testnet/tx/6a4e274aa9f5aeae985b0c304331cc53f5f258f8e5315c515a1bd0e0bc65f34e) |
+| TACOP1 · lote 2019 NDVI 0,814 → emite 5.478 | [1a3f2470…](https://stellar.expert/explorer/testnet/tx/1a3f2470e5a45f3cec9509c42216e625aa36a2f36d71281a070fa197b0e0239a) |
+| **TACOP1 · 2026 NDVI 0,612 → CONGELA, no hay lote nuevo** | [758fc225…](https://stellar.expert/explorer/testnet/tx/758fc225e82a53a76a02246e98b7efbd95a632ad3a44f8f14921766ac13e1079) |
+| Oferta 0: 3.000 t del lote IMPEN1 2026 a 0,1 XLM/t, en custodia del mercado | [f9dc5309…](https://stellar.expert/explorer/testnet/tx/f9dc5309ebdb6c4713b4f2c853c19e3dbb492e3e5557f05f6820b6a76a33e598) |
+| **Compra y quema atómica:** 500 t de IMPEN1 2026, el comprador paga 50 XLM al dueño y se quema a nombre de "Empresa Demo SA - huella 2026" | [e87f6d61…](https://stellar.expert/explorer/testnet/tx/e87f6d61d8bf51b2b88a28e9ef3cf1e7b2f993c894dfe6359bf9f87cccba4e89) |
+| Oferta 1: 2.000 t del lote CHACO1 2026 a 0,2 XLM/t (queda abierta) | [0bdf0799…](https://stellar.expert/explorer/testnet/tx/0bdf0799424934c8a03b1f9f0f4e08a2519b9f4a8a782bbe6ba0386bc956d7f2) |
+
+Estado tras estas transacciones: 61.239 GTON en circulación y 500 retiradas.
+
+**Versión 1 (archivo).** El contrato de la primera entrega, sin lotes ni mercado, sigue en la red: [`CCNQ7X37…SXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG). Su evidencia satelital está en `web/public/verifications.v1.json`.
 
 ## Arquitectura
 
