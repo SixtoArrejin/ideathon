@@ -1,31 +1,37 @@
-import { useCallback, useEffect, useState } from "react";
-import { isConnected, requestAccess } from "@stellar/freighter-api";
-import {
-  balanceOf, getParcel, getRetirement, retire, retirementCount, totalRetired, totalSupply,
-  type Parcel, type Retirement,
-} from "./chain";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getParcel, getRetirement, retirementCount, totalRetired, totalSupply, type Parcel, type Retirement } from "./chain";
 import { CONTRACT_ID, EXPERT, PARCEL_IDS } from "./config";
+import { fmt, ndvi, PARCEL_LABELS, short } from "./lib";
+import ParcelMap from "./components/ParcelMap";
+import NdviChart from "./components/NdviChart";
+import RetirePanel from "./components/RetirePanel";
 
 type Verification = {
   parcel: string; period: number; ndvi: number; scene: string; scene_date: string;
-  hectares: number; tco2e_proposed: number; minted: string | number; tx: string;
+  minted: string | number; tx: string;
 };
 
-const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-6)}`;
-const fmt = (n: bigint | number) => Number(n).toLocaleString("es-AR");
+const STAC_ITEM = (id: string) => `https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/${id}`;
+
+function CopyId() {
+  const [done, setDone] = useState(false);
+  return (
+    <button className="copy" aria-label="Copiar ID del contrato" onClick={() => {
+      navigator.clipboard?.writeText(CONTRACT_ID).then(() => { setDone(true); setTimeout(() => setDone(false), 1500); }).catch(() => {});
+    }}>{done ? "Copiado" : "Copiar"}</button>
+  );
+}
 
 export default function App() {
-  const [supply, setSupply] = useState<bigint>(0n);
-  const [retired, setRetired] = useState<bigint>(0n);
+  const [supply, setSupply] = useState<bigint | null>(null);
+  const [retired, setRetired] = useState<bigint | null>(null);
   const [parcels, setParcels] = useState<Record<string, Parcel>>({});
   const [ver, setVer] = useState<Verification[]>([]);
   const [rets, setRets] = useState<Retirement[]>([]);
-  const [wallet, setWallet] = useState<string>("");
-  const [balance, setBalance] = useState<bigint>(0n);
-  const [amount, setAmount] = useState("100");
-  const [who, setWho] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [selected, setSelected] = useState(() => {
+    const h = window.location.hash.slice(1);
+    return PARCEL_IDS.includes(h) ? h : PARCEL_IDS[0];
+  });
   const [err, setErr] = useState("");
 
   const load = useCallback(async () => {
@@ -37,7 +43,7 @@ export default function App() {
       const list = await Promise.all(Array.from({ length: Number(n) }, (_, i) => getRetirement(i)));
       setRets(list.filter((x): x is Retirement => !!x).reverse());
       setErr("");
-    } catch (e) { setErr(String(e)); }
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
   }, []);
 
   useEffect(() => {
@@ -45,102 +51,130 @@ export default function App() {
     fetch("/verifications.json").then((r) => r.json()).then(setVer).catch(() => {});
   }, [load]);
 
-  useEffect(() => { if (wallet) balanceOf(wallet).then(setBalance).catch(() => {}); }, [wallet, rets]);
-
-  async function connect() {
-    try {
-      if (!(await isConnected()).isConnected) throw new Error("Instalá la extensión Freighter y usá la red Testnet.");
-      const r = await requestAccess();
-      if (r.error) throw new Error(String(r.error.message ?? r.error));
-      setWallet(r.address);
-    } catch (e) { setMsg({ ok: false, text: e instanceof Error ? e.message : String(e) }); }
-  }
-
-  async function doRetire() {
-    setBusy(true); setMsg(null);
-    try {
-      const hash = await retire(wallet, BigInt(amount), who.trim());
-      setMsg({ ok: true, text: hash });
-      await load();
-    } catch (e) { setMsg({ ok: false, text: e instanceof Error ? e.message : String(e) }); }
-    setBusy(false);
-  }
-
-  const frozenCount = Object.values(parcels).filter((p) => p.frozen).length;
+  const onSelect = useCallback((id: string) => {
+    setSelected(id);
+    history.replaceState(null, "", `#${id}`);
+  }, []);
+  const frozen = useMemo(() => Object.values(parcels).filter((p) => p.frozen).length, [parcels]);
+  const p = parcels[selected];
+  const evidence = ver.filter((v) => v.parcel === selected);
+  const meta = PARCEL_LABELS[selected];
 
   return (
-    <main>
-      <header>
-        <h1>🌳 CarbonTrack NEA</h1>
-        <p>Créditos de carbono de bosque nativo verificados por satélite y retirados on-chain en Stellar.</p>
-        <p className="sub">
-          Contrato <a href={`${EXPERT}/contract/${CONTRACT_ID}`} target="_blank" rel="noreferrer">{short(CONTRACT_ID)}</a> · Testnet
-        </p>
+    <>
+      <header className="top">
+        <div className="wrap bar">
+          <div className="brand">
+            <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 6 18h6l-4 9h16l-4-9h6z" fill="currentColor" /></svg>
+            CarbonTrack NEA
+          </div>
+          <div className="contract">
+            <span className="pill">Testnet</span>
+            <a className="mono" href={`${EXPERT}/contract/${CONTRACT_ID}`} target="_blank" rel="noreferrer">{short(CONTRACT_ID, 5)}</a>
+            <CopyId />
+          </div>
+        </div>
       </header>
 
-      {err && <p className="error">No se pudo leer la red: {err}</p>}
+      <main className="wrap">
+        <section className="intro">
+          <h1>Cada tonelada tiene un satélite detrás.</h1>
+          <p>Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
+          <dl className="figures">
+            <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}<small>GTON · 1 = 1 tCO₂e</small></dd></div>
+            <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}<small>tCO₂e quemadas</small></dd></div>
+            <div><dt>Predios congelados</dt><dd className={frozen ? "crit" : ""}>{Object.keys(parcels).length ? `${frozen} de ${Object.keys(parcels).length}` : "…"}<small>por caída de NDVI</small></dd></div>
+          </dl>
+        </section>
 
-      <section className="stats">
-        <div><b>{fmt(supply)}</b><span>GreenTon en circulación (1 = 1 tCO₂e)</span></div>
-        <div><b>{fmt(retired)}</b><span>tCO₂e retiradas (quemadas)</span></div>
-        <div><b>{frozenCount}</b><span>predios congelados por el satélite</span></div>
-      </section>
+        {err && <p className="msg crit" role="alert">No se pudo leer la red de Stellar: {err}</p>}
 
-      <h2>Predios</h2>
-      <section className="cards">
-        {PARCEL_IDS.map((id) => {
-          const p = parcels[id];
-          if (!p) return <article key={id}>Cargando {id}…</article>;
-          const vs = ver.filter((v) => v.parcel === id);
-          return (
-            <article key={id} className={p.frozen ? "frozen" : ""}>
-              <h3>{id} <em className={p.frozen ? "tag bad" : "tag ok"}>{p.frozen ? "CONGELADO" : "ACTIVO"}</em></h3>
-              <p>{fmt(p.hectares)} ha · bbox <code>{p.bbox}</code></p>
-              <p>NDVI línea base <b>{(p.baseline_ndvi_milli / 1000).toFixed(3)}</b> → último <b>{(p.last_ndvi_milli / 1000).toFixed(3)}</b></p>
-              <p>Emitido: <b>{fmt(p.issued_tco2e)}</b> tCO₂e</p>
-              <ul>
-                {vs.map((v) => (
-                  <li key={v.tx}>
-                    Período {v.period}: NDVI {v.ndvi} · escena <code>{v.scene.slice(0, 26)}…</code> ({v.scene_date}) ·{" "}
-                    {Number(v.minted) > 0 ? `+${fmt(Number(v.minted))} GTON` : "sin emisión"} ·{" "}
-                    <a href={`${EXPERT}/tx/${v.tx}`} target="_blank" rel="noreferrer">tx</a>
-                  </li>
-                ))}
-              </ul>
-            </article>
-          );
-        })}
-      </section>
+        <section className="explorer" aria-label="Predios verificados">
+          <div className="mapcol">
+            <ParcelMap parcels={parcels} selected={selected} onSelect={onSelect} />
+          </div>
+          <div className="detail">
+            <ul className="tabs" role="tablist" aria-label="Predio">
+              {PARCEL_IDS.map((id) => (
+                <li key={id}>
+                  <button role="tab" aria-selected={id === selected} className={`tab ${parcels[id]?.frozen ? "is-frozen" : ""}`} onClick={() => onSelect(id)}>
+                    <span className="mono">{id}</span>
+                    <span>{PARCEL_LABELS[id].name}</span>
+                    {parcels[id] && <em>{parcels[id].frozen ? "Congelado" : "Activo"}</em>}
+                  </button>
+                </li>
+              ))}
+            </ul>
 
-      <h2>Retirar créditos (compensar huella)</h2>
-      <section className="panel">
-        {!wallet ? (
-          <button onClick={connect}>Conectar Freighter</button>
-        ) : (
-          <>
-            <p>Billetera <code>{short(wallet)}</code> · saldo <b>{fmt(balance)}</b> GTON</p>
-            <label>Cantidad (tCO₂e)<input value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))} /></label>
-            <label>Quién compensa<input value={who} placeholder="Nombre de la empresa" onChange={(e) => setWho(e.target.value)} /></label>
-            <button disabled={busy || !amount || !who.trim()} onClick={doRetire}>{busy ? "Firmando…" : "Retirar (quemar)"}</button>
-          </>
-        )}
-        {msg && (msg.ok
-          ? <p className="okmsg">✅ Retirado. <a href={`${EXPERT}/tx/${msg.text}`} target="_blank" rel="noreferrer">Ver transacción</a></p>
-          : <p className="error">{msg.text}</p>)}
-      </section>
+            {p ? (
+              <article>
+                <header>
+                  <h2>{meta.name}</h2>
+                  <span className={`status ${p.frozen ? "crit" : "ok"}`}>{p.frozen ? "Congelado: no emite" : "Activo: emite por período"}</span>
+                </header>
+                <p className="muted">{meta.zone} · {fmt(p.hectares)} ha · <span className="mono">{p.bbox}</span></p>
+                <NdviChart p={p} />
+                <dl className="kv">
+                  <div><dt>Emitido</dt><dd className="mono">{fmt(p.issued_tco2e)} tCO₂e</dd></div>
+                  <div><dt>Propietario</dt><dd className="mono">{short(p.owner)}</dd></div>
+                  <div><dt>Variación NDVI</dt><dd className="mono">{(p.last_ndvi_milli - p.baseline_ndvi_milli >= 0 ? "+" : "−") + ndvi(Math.abs(p.last_ndvi_milli - p.baseline_ndvi_milli))}</dd></div>
+                </dl>
 
-      <h2>Registro público de retiros</h2>
-      <ul className="rets">
-        {rets.length === 0 && <li>Todavía no hay retiros.</li>}
-        {rets.map((r, i) => (
-          <li key={i}><b>{fmt(r.amount)}</b> tCO₂e · {r.beneficiary} · <code>{short(r.holder)}</code> · {new Date(Number(r.ledger_time) * 1000).toLocaleString("es-AR")}</li>
-        ))}
-      </ul>
+                <h3>Evidencia satelital</h3>
+                <div className="tablewrap"><table>
+                  <thead><tr><th>Período</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
+                  <tbody>
+                    {evidence.map((v) => (
+                      <tr key={v.tx}>
+                        <td className="mono">{String(v.period).replace(/(\d{4})(\d{2})/, "$1-$2")}</td>
+                        <td className="mono">{v.ndvi.toFixed(3).replace(".", ",")}</td>
+                        <td><a href={STAC_ITEM(v.scene)} target="_blank" rel="noreferrer" className="mono">{v.scene_date}</a></td>
+                        <td>{Number(v.minted) > 0 ? <span className="ok">+{fmt(Number(v.minted))} GTON</span> : <span className="crit">Sin emisión</span>}</td>
+                        <td><a href={`${EXPERT}/tx/${v.tx}`} target="_blank" rel="noreferrer">tx</a></td>
+                      </tr>
+                    ))}
+                    {evidence.length === 0 && <tr><td colSpan={5} className="muted">Sin verificaciones registradas.</td></tr>}
+                  </tbody>
+                </table></div>
+              </article>
+            ) : <p className="muted">Leyendo el contrato…</p>}
+          </div>
+        </section>
 
-      <footer>
-        Factor de conversión NDVI→tCO₂e simplificado e ilustrativo (no es una metodología certificada).
-        El oráculo es una única clave en esta versión.
+        <section className="rules">
+          <h2>Qué decide el contrato</h2>
+          <ol>
+            <li><b>Solo emite el oráculo.</b> El propietario registra el predio con su polígono, pero no puede acuñar.</li>
+            <li><b>Un período, una emisión.</b> Una vez verificado un período de un predio, no se puede repetir.</li>
+            <li><b>El bosque tiene que seguir en pie.</b> Si el NDVI baja de 0,40 o cae más de 0,15 desde la línea base, el predio se congela y no emite.</li>
+            <li><b>Retirar es irreversible.</b> Quemar descuenta del suministro y guarda quién compensó.</li>
+          </ol>
+        </section>
+
+        <section className="retiro">
+          <div>
+            <h2>Retirar créditos</h2>
+            <RetirePanel onDone={load} />
+          </div>
+          <div>
+            <h2>Registro de retiros</h2>
+            <ul className="ledger">
+              {rets.length === 0 && <li className="muted">Todavía no hay retiros.</li>}
+              {rets.map((r, i) => (
+                <li key={i}>
+                  <b className="mono">{fmt(r.amount)} tCO₂e</b>
+                  <span>{r.beneficiary}</span>
+                  <span className="muted mono">{short(r.holder, 4)} · {new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      </main>
+
+      <footer className="wrap foot">
+        <p>El factor que convierte NDVI en tCO₂e es simplificado y no corresponde a una metodología certificada. En esta versión el oráculo es una sola clave y la red es Testnet.</p>
       </footer>
-    </main>
+    </>
   );
 }
