@@ -26,6 +26,7 @@ function Shell() {
     <>
       <a className="skip" href="#contenido">Saltar al contenido</a>
       <Navbar page={page} />
+      <div className="nav-spacer" aria-hidden="true" />
       <main id="contenido" key={page} className="page">
         {err && <div className="wrap"><p className="msg crit" role="alert">No se pudo leer la red de Stellar: {err}</p></div>}
         {page === "inicio" && <Home />}

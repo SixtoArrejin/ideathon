@@ -70,7 +70,7 @@ function BuyModal({ offer, onClose }: { offer: OpenOffer | null; onClose: () => 
 }
 
 export default function Market() {
-  const { offers, parcels, lotInfo } = useData();
+  const { offers, parcels, lotInfo, loaded } = useData();
   const { wallet, connect } = useUi();
   const [buying, setBuying] = useState<OpenOffer | null>(null);
 
@@ -87,7 +87,11 @@ export default function Market() {
         <p className="lead">Cada oferta es un lote concreto. Al comprar, el mercado cobra, le paga al dueño y quema las toneladas a nombre de quien compensa, todo en la misma transacción.</p>
       </header>
 
-      {offers.length === 0 ? (
+      {!loaded ? (
+        <ul className="offers" aria-busy="true" aria-label="Leyendo las ofertas">
+          {[0, 1].map((i) => <li key={i} className="offer skeleton" aria-hidden="true"><i /><i /><i /><i /></li>)}
+        </ul>
+      ) : offers.length === 0 ? (
         <div className="empty">
           <h3>No hay ofertas abiertas</h3>
           <p className="muted">Cuando un propietario publique toneladas de un lote, van a aparecer acá.</p>

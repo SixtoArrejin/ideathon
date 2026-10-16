@@ -26,6 +26,8 @@ type Data = {
   lotInfo: Record<string, LotInfo | null>;
   lots: LotBalance[];
   frozen: number;
+  loaded: boolean;
+  lotsLoaded: boolean;
   err: string;
   refresh: () => void;
 };
@@ -49,6 +51,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
   const [lots, setLots] = useState<LotBalance[]>([]);
   const [err, setErr] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [lotsLoaded, setLotsLoaded] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -72,11 +76,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setLotInfo(Object.fromEntries(infos));
       setErr("");
     } catch (e) { setErr(errText(e)); }
+    setLoaded(true);
   }, []);
 
   const loadWallet = useCallback(async () => {
-    if (!wallet) { setLots([]); return; }
+    if (!wallet) { setLots([]); setLotsLoaded(false); return; }
     try { setLots(await lotsOf(wallet)); } catch { setLots([]); }
+    setLotsLoaded(true);
   }, [wallet]);
 
   const refresh = useCallback(() => { load(); loadWallet(); }, [load, loadWallet]);
@@ -92,8 +98,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const myOffers = useMemo(() => offers.filter((o) => o.seller === wallet), [offers, wallet]);
 
   const value = useMemo(
-    () => ({ supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, err, refresh }),
-    [supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, err, refresh],
+    () => ({ supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh }),
+    [supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

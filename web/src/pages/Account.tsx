@@ -93,7 +93,7 @@ function LotModal({ action, onClose }: { action: Action | null; onClose: () => v
 
 export default function Account() {
   const { wallet, connecting, connect, disconnect, transact } = useUi();
-  const { lots, myOffers, refresh } = useData();
+  const { lots, myOffers, refresh, lotsLoaded } = useData();
   const [action, setAction] = useState<Action | null>(null);
 
   if (!wallet) {
@@ -145,7 +145,9 @@ export default function Account() {
 
       <section className="section-tight">
         <h2>Mis lotes</h2>
-        {lots.length === 0 ? (
+        {!lotsLoaded ? (
+          <p className="muted">Leyendo tus lotes en la red…</p>
+        ) : lots.length === 0 ? (
           <div className="empty">
             <h3>Esta billetera no tiene lotes</h3>
             <p className="muted">Los lotes los emite el oráculo al propietario de un predio. Si querés compensar sin tener tokens, comprá y quemá desde el <a href={hrefFor("mercado")}>mercado</a>.</p>
@@ -169,7 +171,7 @@ export default function Account() {
 
       <section className="section-tight">
         <h2>Mis ofertas abiertas</h2>
-        {myOffers.length === 0 ? <p className="muted">No tenés ofertas abiertas.</p> : (
+        {!lotsLoaded ? <p className="muted">Leyendo tus ofertas…</p> : myOffers.length === 0 ? <p className="muted">No tenés ofertas abiertas.</p> : (
           <ul className="ledger">
             {myOffers.map((o) => (
               <li key={o.id}>

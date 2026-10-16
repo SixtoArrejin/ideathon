@@ -15,7 +15,7 @@ const SECTIONS = [
 const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 
 export default function Transparency() {
-  const { rets } = useData();
+  const { rets, loaded } = useData();
   const contracts = [
     { name: "GreenTon v2", note: "Lotes, emisión, congelamiento y retiro", id: CONTRACT_ID },
     { name: "Mercado", note: "Ofertas y compra con quema atómica", id: MARKET_ID },
@@ -41,7 +41,8 @@ export default function Transparency() {
             <h2>Registro de retiros</h2>
             <p className="muted">Cada fila es una quema irreversible. En las compras del mercado, el titular que figura es el contrato del mercado y el comprador queda en el evento de compra.</p>
             <ul className="ledger">
-              {rets.length === 0 && <li className="muted">Todavía no hay retiros.</li>}
+              {!loaded && <li className="muted">Leyendo la red de Stellar…</li>}
+              {loaded && rets.length === 0 && <li className="muted">Todavía no hay retiros.</li>}
               {rets.map((r, i) => (
                 <li key={i}>
                   <b className="mono">{fmt(r.amount)} tCO₂e</b>

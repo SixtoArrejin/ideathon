@@ -1,6 +1,7 @@
 import CanopyArt from "../components/CanopyArt";
+import CountUp from "../components/CountUp";
 import { useData } from "../data";
-import { fmt, ndvi } from "../lib";
+import { ndvi } from "../lib";
 import { hrefFor } from "../router";
 
 const STEPS = [
@@ -34,10 +35,10 @@ export default function Home() {
 
       <section className="wrap band">
         <dl className="figures">
-          <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}</dd><small>GTON · 1 GTON = 1 tCO₂e</small></div>
-          <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}</dd><small>tCO₂e quemadas para siempre</small></div>
+          <div><dt>En circulación</dt><dd>{supply === null ? "…" : <CountUp value={Number(supply)} />}</dd><small>GTON · 1 GTON = 1 tCO₂e</small></div>
+          <div><dt>Retiradas</dt><dd>{retired === null ? "…" : <CountUp value={Number(retired)} />}</dd><small>tCO₂e quemadas para siempre</small></div>
           <div><dt>Predios congelados</dt><dd className={frozen ? "crit" : ""}>{total ? `${frozen} de ${total}` : "…"}</dd><small>por caída de vegetación</small></div>
-          <div><dt>Ofertas abiertas</dt><dd>{total ? offers.length : "…"}</dd><small>en el mercado</small></div>
+          <div><dt>Ofertas abiertas</dt><dd>{total ? <CountUp value={offers.length} /> : "…"}</dd><small>en el mercado</small></div>
         </dl>
       </section>
 
