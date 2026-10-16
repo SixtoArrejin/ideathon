@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { cancel, list, type LotBalance } from "../chain";
-import { EXPERT, PAYMENT_ASSET_CODE } from "../config";
+import { PAYMENT_ASSET_CODE } from "../config";
 import { fmt, fromUnits, lotLabel, toUnits } from "../lib";
-import { errText } from "../wallet";
+import { useUi } from "../ui";
 import type { OpenOffer } from "./MarketPanel";
 
 const key = (l: LotBalance) => `${l.parcel}:${l.period}`;
@@ -13,8 +13,7 @@ export default function OwnerPanel({ wallet, lots, myOffers, onDone }: Props) {
   const [lotKey, setLotKey] = useState("");
   const [amount, setAmount] = useState("");
   const [price, setPrice] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; text: string; hash?: string } | null>(null);
+  const { transact } = useUi();
 
   useEffect(() => {
     if (!lots.some((l) => key(l) === lotKey)) setLotKey(lots[0] ? key(lots[0]) : "");
@@ -24,17 +23,45 @@ export default function OwnerPanel({ wallet, lots, myOffers, onDone }: Props) {
   const n = amount ? BigInt(amount) : 0n;
   const unitPrice = toUnits(price);
   const tooMuch = !!lot && n > lot.amount;
-  const canList = !busy && !!lot && n > 0n && !tooMuch && !!unitPrice && unitPrice > 0n;
+  const canList = !!lot && n > 0n && !tooMuch && !!unitPrice && unitPrice > 0n;
   const inCustody = myOffers.reduce((s, o) => s + o.available, 0n);
 
-  async function run(action: () => Promise<string>, ok: string) {
-    setBusy(true); setResult(null);
-    try {
-      const hash = await action();
-      setResult({ ok: true, text: ok, hash });
-      onDone();
-    } catch (e) { setResult({ ok: false, text: errText(e) }); }
-    setBusy(false);
+  function publish() {
+    if (!lot || !unitPrice) return;
+    const label = lotLabel(lot.parcel, lot.period);
+    transact({
+      title: "Confirmar oferta",
+      lead: "Las toneladas pasan a custodia del mercado hasta que se vendan o vos canceles la oferta.",
+      rows: [
+        { label: "Lote", value: label },
+        { label: "Toneladas", value: `${fmt(n)} t` },
+        { label: "Precio", value: `${fromUnits(unitPrice)} ${PAYMENT_ASSET_CODE} por tonelada` },
+        { label: "Total si se vende todo", value: `${fromUnits(unitPrice * n)} ${PAYMENT_ASSET_CODE}` },
+      ],
+      note: "Mientras la oferta esté abierta, esas toneladas no aparecen en tu cuenta.",
+      confirmLabel: "Firmar con Freighter",
+      success: `Publicaste ${fmt(n)} t del lote ${label}. Ya aparecen en el mercado.`,
+      context: "market",
+      action: () => list(wallet, lot.parcel, lot.period, n, unitPrice),
+      onSuccess: () => { setAmount(""); onDone(); },
+    });
+  }
+
+  function cancelOffer(o: OpenOffer) {
+    const label = lotLabel(o.parcel, o.period);
+    transact({
+      title: "Cancelar oferta",
+      lead: "La oferta se cierra y las toneladas que no se vendieron vuelven a tu cuenta.",
+      rows: [
+        { label: "Lote", value: label },
+        { label: "Vuelven a tu cuenta", value: `${fmt(o.available)} t` },
+      ],
+      confirmLabel: "Firmar con Freighter",
+      success: `Cancelaste la oferta. ${fmt(o.available)} t del lote ${label} volvieron a tu cuenta.`,
+      context: "market",
+      action: () => cancel(wallet, o.id),
+      onSuccess: onDone,
+    });
   }
 
   return (
@@ -62,9 +89,7 @@ export default function OwnerPanel({ wallet, lots, myOffers, onDone }: Props) {
             </label>
           </div>
           {tooMuch && <p className="msg crit">El lote tiene {fmt(lot!.amount)} GTON.</p>}
-          <button className="btn" disabled={!canList} onClick={() => run(() => list(wallet, lot!.parcel, lot!.period, n, unitPrice!), "Oferta publicada.")}>
-            {busy ? "Esperando la firma…" : "Publicar y poner en custodia"}
-          </button>
+          <button className="btn" disabled={!canList} onClick={publish}>Publicar y poner en custodia</button>
         </>
       )}
 
@@ -76,16 +101,13 @@ export default function OwnerPanel({ wallet, lots, myOffers, onDone }: Props) {
               <li key={o.id}>
                 <b className="mono">{fmt(o.available)} t</b>
                 <span className="mono">{lotLabel(o.parcel, o.period)} · {fromUnits(o.price_per_ton)} {PAYMENT_ASSET_CODE}/t</span>
-                <button className="copy" disabled={busy} onClick={() => run(() => cancel(wallet, o.id), "Oferta cancelada.")}>Cancelar</button>
+                <button className="copy" onClick={() => cancelOffer(o)}>Cancelar</button>
               </li>
             ))}
           </ul>
         </>
       )}
 
-      {result && (result.ok
-        ? <p className="msg ok">{result.text} <a href={`${EXPERT}/tx/${result.hash}`} target="_blank" rel="noreferrer">Ver la transacción</a></p>
-        : <p className="msg crit">{result.text}</p>)}
     </div>
   );
 }

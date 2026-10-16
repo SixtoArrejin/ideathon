@@ -5,7 +5,8 @@ import {
 } from "./chain";
 import { CONFIGURED, CONTRACT_ID, EXPERT, MARKET_ID, PARCEL_IDS } from "./config";
 import { fmt, lotLabel, ndvi, PARCEL_LABELS, period, short } from "./lib";
-import { connectFreighter, errText } from "./wallet";
+import { errText } from "./wallet";
+import { useUi } from "./ui";
 import ParcelMap from "./components/ParcelMap";
 import NdviChart from "./components/NdviChart";
 import CoverCheck, { type Cover } from "./components/CoverCheck";
@@ -53,9 +54,8 @@ function Dashboard() {
   const [rets, setRets] = useState<Retirement[]>([]);
   const [offers, setOffers] = useState<OpenOffer[]>([]);
   const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
-  const [wallet, setWallet] = useState("");
+  const { wallet, connecting, connect, disconnect } = useUi();
   const [lots, setLots] = useState<LotBalance[]>([]);
-  const [walletErr, setWalletErr] = useState("");
   const [selected, setSelected] = useState(() => {
     const h = window.location.hash.slice(1);
     return PARCEL_IDS.includes(h) ? h : PARCEL_IDS[0];
@@ -100,11 +100,6 @@ function Dashboard() {
   }, [load]);
   useEffect(() => { loadWallet(); }, [loadWallet]);
 
-  async function connect() {
-    setWalletErr("");
-    try { setWallet(await connectFreighter()); } catch (e) { setWalletErr(errText(e)); }
-  }
-
   const onSelect = useCallback((id: string) => {
     setSelected(id);
     history.replaceState(null, "", `#${id}`);
@@ -131,8 +126,11 @@ function Dashboard() {
             <span className="muted">Mercado</span>
             <a className="mono" href={`${EXPERT}/contract/${MARKET_ID}`} target="_blank" rel="noreferrer" title={MARKET_ID}>{short(MARKET_ID, 5)}</a>
             {wallet
-              ? <span className="mono" title={wallet}>{short(wallet, 4)}</span>
-              : <button className="copy" onClick={connect}>Conectar Freighter</button>}
+              ? <>
+                  <span className="mono" title={wallet}>{short(wallet, 4)}</span>
+                  <button className="copy" onClick={disconnect}>Desconectar</button>
+                </>
+              : <button className="copy" disabled={connecting} onClick={() => connect()}>{connecting ? "Buscando Freighter…" : "Conectar Freighter"}</button>}
           </div>
         </div>
       </header>
@@ -149,7 +147,6 @@ function Dashboard() {
         </section>
 
         {err && <p className="msg crit" role="alert">No se pudo leer la red de Stellar: {err}</p>}
-        {walletErr && <p className="msg crit" role="alert">{walletErr}</p>}
 
         <section className="explorer" aria-label="Predios verificados">
           <div className="mapcol">
@@ -234,7 +231,7 @@ function Dashboard() {
             ) : (
               <>
                 <p className="lede">Conectá una billetera Freighter en Testnet para ver tus lotes, publicar ofertas o retirar.</p>
-                <button className="btn" onClick={connect}>Conectar Freighter</button>
+                <button className="btn" disabled={connecting} onClick={() => connect()}>{connecting ? "Buscando Freighter…" : "Conectar Freighter"}</button>
               </>
             )}
           </div>
