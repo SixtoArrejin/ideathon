@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { EXPERT } from "../config";
 import { short } from "../lib";
-import { hrefFor, PAGES, type Page } from "../router";
+import { hrefFor, NAV_PAGES, type Page } from "../router";
 import { useUi } from "../ui";
 import Logo from "./Logo";
 import ThemeToggle from "./ThemeToggle";
@@ -65,7 +65,7 @@ export default function Navbar({ page }: { page: Page }) {
           <span>Dosel</span>
         </a>
         <nav className="links" aria-label="Secciones">
-          {PAGES.map((p) => (
+          {NAV_PAGES.map((p) => (
             <a key={p.id} href={hrefFor(p.id)} className={p.id === page ? "is-active" : ""} aria-current={p.id === page ? "page" : undefined}>{p.label}</a>
           ))}
         </nav>
@@ -82,7 +82,7 @@ export default function Navbar({ page }: { page: Page }) {
       </div>
       <nav className="drawer" aria-label="Secciones (móvil)">
         <div className="wrap">
-          {PAGES.map((p) => (
+          {NAV_PAGES.map((p) => (
             <a key={p.id} href={hrefFor(p.id)} className={p.id === page ? "is-active" : ""}>{p.label}</a>
           ))}
         </div>

@@ -5,6 +5,7 @@ import { fmt, lotLabel, short } from "../lib";
 import { hrefFor } from "../router";
 
 const SECTIONS = [
+  { id: "porque", label: "Por qué existe Dosel" },
   { id: "retiros", label: "Registro de retiros" },
   { id: "reglas", label: "Reglas del contrato" },
   { id: "contratos", label: "Contratos y cuentas" },
@@ -37,6 +38,24 @@ export default function Transparency() {
         </nav>
 
         <div className="doc-body">
+          <section id="porque">
+            <h2>Por qué existe Dosel</h2>
+            <p className="lead">Un crédito de carbono vale lo que vale la prueba que tiene detrás. Hoy esa prueba suele ser un PDF firmado, mientras el bosque que se dice proteger puede estar cayendo.</p>
+            <ul className="stats3">
+              <li><b>119.886 ha</b><span>de bosque nativo desmontadas en el norte argentino en 2024, según Greenpeace.</span></li>
+              <li><b>210.702 ha</b><span>perdidas en 2025 entre desmonte e incendios, según el mismo informe.</span></li>
+              <li><b>Sin marco legal</b><span>El mercado de carbono argentino sigue esperando una ley: el Senado dio dictamen en septiembre de 2026.</span></li>
+            </ul>
+            <h3>Por qué en una blockchain</h3>
+            <p className="muted">No es tecnología por la tecnología: es el lugar donde la confianza no se puede delegar.</p>
+            <ul className="why3">
+              <li><h3>Una tonelada, un solo dueño</h3><p>En la base de datos de un operador, la misma tonelada se puede vender dos veces o editar después. En un contrato compartido el saldo es uno solo y lo ve cualquiera.</p></li>
+              <li><h3>Pagar y compensar, juntos</h3><p>El mercado cobra, le paga al dueño y quema las toneladas en una sola transacción. Nadie tiene que confiar en la otra parte ni en un intermediario.</p></li>
+              <li><h3>Reglas y pruebas que nadie reescribe</h3><p>El umbral que congela un predio y cada verificación quedan grabados con su escena satelital. Ni el propietario ni nosotros podemos cambiarlos después.</p></li>
+            </ul>
+            <p className="note"><b>Lo que no va a la cadena:</b> las imágenes, el cálculo del NDVI y los mapas. Solo vive en la red lo que necesita confianza compartida.</p>
+          </section>
+
           <section id="retiros">
             <h2>Registro de retiros</h2>
             <p className="muted">Cada fila es una quema irreversible. En las compras del mercado, el titular que figura es el contrato del mercado y el comprador queda en el evento de compra.</p>

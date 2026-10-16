@@ -7,6 +7,7 @@ import Account from "./pages/Account";
 import Home from "./pages/Home";
 import Market from "./pages/Market";
 import Parcels from "./pages/Parcels";
+import Radar from "./pages/Radar";
 import Transparency from "./pages/Transparency";
 import { PARCEL_IDS } from "./config";
 import { PAGES, useRoute } from "./router";
@@ -32,6 +33,7 @@ function Shell() {
         {page === "inicio" && <Home />}
         {page === "predios" && <Parcels selected={selected} />}
         {page === "mercado" && <Market />}
+        {page === "radar" && <Radar />}
         {page === "cuenta" && <Account />}
         {page === "transparencia" && <Transparency />}
       </main>

@@ -15,6 +15,7 @@ export default function Footer() {
           <h3>Explorar</h3>
           <a href={hrefFor("predios")}>Predios</a>
           <a href={hrefFor("mercado")}>Mercado</a>
+          <a href={hrefFor("radar")}>Radar</a>
           <a href={hrefFor("cuenta")}>Mi cuenta</a>
         </div>
         <div className="foot-col">

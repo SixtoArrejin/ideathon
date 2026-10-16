@@ -11,7 +11,7 @@ cd web && npm install && npm run build                # tiene que terminar sin e
 npm run dev                                           # http://localhost:5173
 ```
 
-La web tiene cinco secciones (Inicio, Predios, Mercado, Mi cuenta y Transparencia). Con los contratos actuales en Testnet se ve: 3 predios en el mapa satelital, 61.239 GTON en circulación, 500 retiradas, `TACOP1` en rojo como congelado y dos ofertas en el mercado (una con compra parcial). Los IDs ya vienen por defecto en `web/src/config.ts`; `VITE_GREENTON_ID` y `VITE_MARKET_ID` solo hacen falta si se redespliega.
+La web tiene cinco secciones en la barra (Inicio, Predios, Mercado, Radar y Transparencia) y Mi cuenta en el menú de la billetera. Con los contratos actuales en Testnet se ve: 3 predios en el mapa satelital, 61.239 GTON en circulación, 500 retiradas, `TACOP1` en rojo como congelado y dos ofertas en el mercado (una con compra parcial). Los IDs ya vienen por defecto en `web/src/config.ts`; `VITE_GREENTON_ID` y `VITE_MARKET_ID` solo hacen falta si se redespliega.
 
 ## 2. Desplegar la web (estática)
 
