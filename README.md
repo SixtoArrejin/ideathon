@@ -1,6 +1,6 @@
-# CarbonTrack NEA · GreenTon
+# Quebracho
 
-Créditos de carbono de **bosque nativo** del NEA/Gran Chaco, **verificados por satélite** y emitidos/retirados en **Stellar (Soroban)**.
+*Quebracho* viene de «quiebra-hacha», el árbol emblema del Gran Chaco. Créditos de carbono de **bosque nativo** del NEA/Gran Chaco, **verificados por satélite** y emitidos/retirados en **Stellar (Soroban)**.
 Proyecto para el IDEATHON Neatech 2026 · Stellar Track.
 
 **No confiamos en la palabra del dueño del campo.** Un oráculo calcula el NDVI real de Sentinel-2 sobre el polígono GPS del predio

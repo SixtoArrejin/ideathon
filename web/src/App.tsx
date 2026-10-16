@@ -5,6 +5,7 @@ import { fmt, ndvi, PARCEL_LABELS, short } from "./lib";
 import ParcelMap from "./components/ParcelMap";
 import NdviChart from "./components/NdviChart";
 import RetirePanel from "./components/RetirePanel";
+import Logo from "./components/Logo";
 
 type Verification = {
   parcel: string; period: number; ndvi: number; scene: string; scene_date: string;
@@ -65,8 +66,8 @@ export default function App() {
       <header className="top">
         <div className="wrap bar">
           <div className="brand">
-            <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3 6 18h6l-4 9h16l-4-9h6z" fill="currentColor" /></svg>
-            CarbonTrack NEA
+            <Logo size={30} />
+            Quebracho
           </div>
           <div className="contract">
             <span className="pill">Testnet</span>
@@ -78,8 +79,8 @@ export default function App() {
 
       <main className="wrap">
         <section className="intro">
-          <h1>Cada tonelada tiene un satélite detrás.</h1>
-          <p>Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
+          <h1>El árbol que rompe hachas, ahora con respaldo satelital.</h1>
+          <p>Quebracho viene de «quiebra-hacha», el árbol emblema del Gran Chaco, donde se concentra la mayor parte del desmonte del país. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
           <dl className="figures">
             <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}<small>GTON · 1 = 1 tCO₂e</small></dd></div>
             <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}<small>tCO₂e quemadas</small></dd></div>

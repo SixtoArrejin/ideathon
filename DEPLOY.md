@@ -35,7 +35,7 @@ La web lee todo directo del RPC de Stellar Testnet. No necesita variables de ent
 - [ ] Pegar la URL de la demo en el `README.md` (sección "Demo").
 - [ ] Probar la demo desde un navegador limpio: el mapa carga, el contrato se lee, **Retirar** funciona con Freighter en Testnet.
 - [ ] Grabar el video (guion en `docs/pitch/guion-video.md`) y subirlo a YouTube o Drive con acceso público.
-- [ ] Subir en [stellarapex.org](https://stellarapex.org): repo, link de la demo, **ID del contrato**, hash de una transacción y cuentas (están en el README), video, deck PDF (`docs/pitch/CarbonTrack-NEA-deck.pdf`) y evidencia de validación (`docs/validacion.md`).
+- [ ] Subir en [stellarapex.org](https://stellarapex.org): repo, link de la demo, **ID del contrato**, hash de una transacción y cuentas (están en el README), video, deck PDF (`docs/pitch/Quebracho-deck.pdf`) y evidencia de validación (`docs/validacion.md`).
 - [ ] Subir con al menos 30 minutos de anticipación. **No pushear commits después del cierre**: no se consideran.
 
 ## 4. Probar Retirar con Freighter
