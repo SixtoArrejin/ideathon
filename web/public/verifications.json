@@ -1,0 +1,74 @@
+[
+  {
+    "parcel": "IMPEN1",
+    "period": 201903,
+    "ndvi": 0.768,
+    "scene": "S2A_MSIL2A_20190219T141041_R110_T20JPS_20201007T182509",
+    "scene_date": "2019-02-19",
+    "cloud": 0.004735,
+    "hectares": 2781,
+    "tco2e_proposed": 14082,
+    "minted": "14082",
+    "tx": "f196f947889a919742a63f2d780345377352c12095bfcbd43c5f510f36bf44ec"
+  },
+  {
+    "parcel": "IMPEN1",
+    "period": 202603,
+    "ndvi": 0.769,
+    "scene": "S2B_MSIL2A_20260329T141049_R110_T20JQS_20260329T173421",
+    "scene_date": "2026-03-29",
+    "cloud": 0.002061,
+    "hectares": 2781,
+    "tco2e_proposed": 14099,
+    "minted": "14099",
+    "tx": "f367cafccb188c623d41ff2874710c6f3859dae0dc279395f8f4ec6b0feec2a2"
+  },
+  {
+    "parcel": "CHACO1",
+    "period": 201903,
+    "ndvi": 0.771,
+    "scene": "S2B_MSIL2A_20190303T140049_R067_T21JTL_20201030T115621",
+    "scene_date": "2019-03-03",
+    "cloud": 0.006991,
+    "hectares": 2747,
+    "tco2e_proposed": 13997,
+    "minted": "13997",
+    "tx": "cbc0bb533df8599137b835b74f9f94a4159ba4b7ed35a4b54d0985182104e53b"
+  },
+  {
+    "parcel": "CHACO1",
+    "period": 202603,
+    "ndvi": 0.773,
+    "scene": "S2B_MSIL2A_20260204T135659_R067_T21JTL_20260204T191751",
+    "scene_date": "2026-02-04",
+    "cloud": 0.002605,
+    "hectares": 2747,
+    "tco2e_proposed": 14083,
+    "minted": "14083",
+    "tx": "acf4e2c55f8e729b501767535fa2698c9ab42819848d3b964c38e27df5b9acdd"
+  },
+  {
+    "parcel": "TACOP1",
+    "period": 201903,
+    "ndvi": 0.814,
+    "scene": "S2A_MSIL2A_20190219T141041_R110_T20JPS_20201007T182509",
+    "scene_date": "2019-02-19",
+    "cloud": 0.004735,
+    "hectares": 996,
+    "tco2e_proposed": 5478,
+    "minted": "5478",
+    "tx": "329e3a0420e33ee42f094635627445639979181330a5c356ef7118b64b84bbc7"
+  },
+  {
+    "parcel": "TACOP1",
+    "period": 202603,
+    "ndvi": 0.612,
+    "scene": "S2B_MSIL2A_20260329T141049_R110_T20JPS_20260329T173421",
+    "scene_date": "2026-03-29",
+    "cloud": 0.002303,
+    "hectares": 996,
+    "tco2e_proposed": 2898,
+    "minted": "0",
+    "tx": "cc1170f6ee4781e030030e3a10397da0789010acf36ea9f4f73bebe707a03134"
+  }
+]

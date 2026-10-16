@@ -1,0 +1,20 @@
+[
+  {
+    "id": "IMPEN1",
+    "name": "Predio demo — Impenetrable (Chaco)",
+    "bbox": [-60.95, -25.35, -60.90, -25.30],
+    "note": "Bosque chaqueño sano y estable 2019-2026."
+  },
+  {
+    "id": "CHACO1",
+    "name": "Predio demo — Chaco húmedo (Parque Nacional Chaco)",
+    "bbox": [-59.62, -26.80, -59.57, -26.75],
+    "note": "Bosque sano y estable 2019-2026."
+  },
+  {
+    "id": "TACOP1",
+    "name": "Predio demo — Lote en desmonte (zona Taco Pozo / Copo)",
+    "bbox": [-61.80, -26.00, -61.77, -25.97],
+    "note": "NDVI cae de ~0.87 (2019) a ~0.58 (2026) en un lote dentro de la zona donde Greenpeace documentó desmontes. No es un lote confirmado como ilegal."
+  }
+]

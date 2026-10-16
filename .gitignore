@@ -1,0 +1,13 @@
+# Rust's output directory
+target
+
+# Local settings
+.soroban
+.stellar
+
+# Web / oracle
+node_modules
+dist
+oracle/.venv
+__pycache__
+.vercel
