@@ -1,7 +1,10 @@
-import CanopyArt from "../components/CanopyArt";
+import { useState } from "react";
 import CountUp from "../components/CountUp";
+import HeroSat from "../components/HeroSat";
+import ProposeParcel from "../components/ProposeParcel";
+import { NewsList, SceneList } from "../components/Radar";
+import Ticker from "../components/Ticker";
 import { useData } from "../data";
-import { ndvi } from "../lib";
 import { hrefFor } from "../router";
 
 const STEPS = [
@@ -11,9 +14,15 @@ const STEPS = [
   { tag: "Stellar", title: "Comprar es compensar", text: "La empresa paga y quema las toneladas en una sola transacción. Queda su nombre y el lote de origen." },
 ];
 
+const WHY = [
+  { n: "Una tonelada, un solo dueño", t: "En la base de datos de un operador, la misma tonelada se puede vender dos veces o editar después. En un contrato compartido el saldo es uno solo y lo ve cualquiera." },
+  { n: "Pagar y compensar, juntos", t: "El mercado cobra, le paga al dueño y quema las toneladas en una sola transacción. Ni el comprador ni el vendedor tienen que confiar en la otra parte ni en un intermediario." },
+  { n: "Reglas y pruebas que nadie reescribe", t: "El umbral que congela un predio y cada verificación quedan grabados con su escena satelital. Ni el propietario ni nosotros podemos cambiarlos después." },
+];
+
 export default function Home() {
   const { supply, retired, frozen, parcels, offers } = useData();
-  const lead = parcels.IMPEN1;
+  const [propose, setPropose] = useState(false);
   const total = Object.keys(parcels).length;
 
   return (
@@ -29,9 +38,11 @@ export default function Home() {
               <a className="btn ghost" href={hrefFor("mercado")}>Ir al mercado</a>
             </div>
           </div>
-          <CanopyArt caption={lead ? `IMPEN1 · NDVI ${ndvi(lead.last_ndvi_milli)} · estable` : "IMPEN1 · leyendo la red…"} />
+          <HeroSat />
         </div>
       </section>
+
+      <Ticker />
 
       <section className="wrap band">
         <dl className="figures">
@@ -40,6 +51,32 @@ export default function Home() {
           <div><dt>Predios congelados</dt><dd className={frozen ? "crit" : ""}>{total ? `${frozen} de ${total}` : "…"}</dd><small>por caída de vegetación</small></div>
           <div><dt>Ofertas abiertas</dt><dd>{total ? <CountUp value={offers.length} /> : "…"}</dd><small>en el mercado</small></div>
         </dl>
+      </section>
+
+      <section className="wrap section problem">
+        <header className="section-head">
+          <p className="kicker">El problema</p>
+          <h2>Un crédito de carbono vale lo que vale la prueba que tiene detrás</h2>
+          <p className="lead">Hoy esa prueba suele ser un PDF firmado. Mientras tanto, el bosque que se dice proteger puede estar cayendo.</p>
+        </header>
+        <ul className="stats3">
+          <li><b>119.886 ha</b><span>de bosque nativo desmontadas en el norte argentino en 2024, según Greenpeace.</span></li>
+          <li><b>210.702 ha</b><span>perdidas en 2025 entre desmonte e incendios, según el mismo informe.</span></li>
+          <li><b>Sin marco legal</b><span>El mercado de carbono argentino sigue esperando una ley: el Senado dio dictamen en septiembre de 2026.</span></li>
+        </ul>
+      </section>
+
+      <section className="wrap section why">
+        <header className="section-head">
+          <p className="kicker">Por qué en una blockchain</p>
+          <h2>No es tecnología por la tecnología: es donde la confianza no se puede delegar</h2>
+        </header>
+        <ul className="why3">
+          {WHY.map((w) => (
+            <li key={w.n}><h3>{w.n}</h3><p>{w.t}</p></li>
+          ))}
+        </ul>
+        <p className="note"><b>Lo que no va a la cadena:</b> las imágenes, el cálculo del NDVI y los mapas. Solo vive en la red lo que necesita confianza compartida.</p>
       </section>
 
       <section className="wrap section">
@@ -58,28 +95,27 @@ export default function Home() {
         </ol>
       </section>
 
-      <section className="wrap section">
-        <div className="doors">
-          <a className="door" href={hrefFor("predios")}>
-            <p className="kicker">Predios</p>
-            <h3>Tres predios con evidencia real</h3>
-            <p>Mapa satelital, NDVI contra los umbrales del contrato y un cruce con cobertura del suelo. Uno de ellos está congelado, y no es lo que parece.</p>
-            <span className="go">Ver los predios →</span>
-          </a>
-          <a className="door" href={hrefFor("mercado")}>
-            <p className="kicker">Mercado</p>
-            <h3>Comprar y quemar en un paso</h3>
-            <p>Elegí un lote, indicá a nombre de quién compensás y firmá con Freighter. Si el pago falla, no se quema nada.</p>
-            <span className="go">Abrir el mercado →</span>
-          </a>
+      <section className="wrap section radar" id="radar">
+        <header className="section-head">
+          <p className="kicker">Radar del Chaco</p>
+          <h2>Lo que está pasando en el monte, y cuándo lo vuelve a mirar el satélite</h2>
+        </header>
+        <div className="radar-grid">
+          <NewsList />
+          <SceneList />
+        </div>
+        <div className="join">
+          <div>
+            <h3>¿Tenés un bosque, o compensás tu huella?</h3>
+            <p className="muted">Proponé un predio para que el oráculo lo mida, o comprá toneladas de un lote que ya tiene evidencia.</p>
+          </div>
+          <div className="cta">
+            <button className="btn" onClick={() => setPropose(true)}>Proponer un predio</button>
+            <a className="btn ghost" href={hrefFor("mercado")}>Comprar toneladas</a>
+          </div>
         </div>
       </section>
-
-      <section className="wrap section candid">
-        <p className="kicker">Lo que decimos de frente</p>
-        <p className="lead">Es un prototipo en Testnet. El oráculo es una sola clave, el factor de toneladas es ilustrativo y el NDVI solo puede confundir un cultivo con una tala. Por eso hay una segunda señal y una persona que decide.</p>
-        <a className="go" href={hrefFor("transparencia")}>Ver todos los límites →</a>
-      </section>
+      <ProposeParcel open={propose} onClose={() => setPropose(false)} />
     </>
   );
 }

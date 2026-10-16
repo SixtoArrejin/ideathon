@@ -26,3 +26,6 @@ export const ACCOUNTS = [
 ];
 /** Contrato de la primera entrega (sin lotes ni mercado), conservado como archivo. */
 export const V1_CONTRACT_ID = "CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG";
+
+/** Repositorio donde llegan las propuestas de predios (cada una abre un issue prellenado). */
+export const REPO_URL = "https://github.com/SixtoArrejin/ideathon";

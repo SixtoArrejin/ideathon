@@ -55,7 +55,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [lotsLoaded, setLotsLoaded] = useState(false);
 
   const load = useCallback(async () => {
-    try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
       const [s, r, n, oc] = await Promise.all([totalSupply(), totalRetired(), retirementCount(), offerCount()]);
       setSupply(s); setRetired(r);
       const ps = await Promise.all(PARCEL_IDS.map(async (id) => [id, await getParcel(id)] as const));
@@ -75,7 +76,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }));
       setLotInfo(Object.fromEntries(infos));
       setErr("");
-    } catch (e) { setErr(errText(e)); }
+        break;
+      } catch (e) {
+        if (attempt === 2) setErr(errText(e));
+        else await new Promise((r) => setTimeout(r, 1200 * (attempt + 1)));
+      }
+    }
     setLoaded(true);
   }, []);
 

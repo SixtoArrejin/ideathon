@@ -58,8 +58,8 @@ export default function Navbar({ page }: { page: Page }) {
   useEffect(() => setOpen(false), [page]);
 
   return (
-    <header className={`nav ${scrolled ? "is-scrolled" : ""} ${open ? "is-open" : ""}`}>
-      <div className="wrap nav-bar">
+    <header className={`nav ${scrolled || open ? "is-floating" : ""} ${open ? "is-open" : ""}`}>
+      <div className="nav-bar">
         <a className="brand" href={hrefFor("inicio")} aria-label="Dosel, inicio">
           <Logo size={28} />
           <span>Dosel</span>

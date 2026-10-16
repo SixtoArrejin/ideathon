@@ -73,6 +73,10 @@ Reglas del mercado (`contracts/market/src/lib.rs`):
 
 Decisiones: [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
 
+## Radar y propuesta de predios
+
+La portada de la web suma un **Radar del Chaco**: noticias recientes sobre desmonte y mercado de carbono (`oracle/news.py` las recopila del RSS de Google Noticias y escribe `web/public/news.json`; correrlo de nuevo las actualiza) y la **última pasada de Sentinel-2** sobre cada predio, consultada en vivo al catálogo público de Planetary Computer. El botón «Proponer un predio» abre un issue prellenado en este repositorio con las coordenadas y el contacto, que es cómo se recopilan predios nuevos sin servidor propio.
+
 ## Cómo correrlo
 
 Requisitos: Rust + `wasm32v1-none`, [Stellar CLI](https://developers.stellar.org/docs/tools/cli), Node 20+, Python 3.11+.

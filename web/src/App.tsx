@@ -13,7 +13,7 @@ import { PAGES, useRoute } from "./router";
 
 function Shell() {
   const { page, param } = useRoute();
-  const { err } = useData();
+  const { err, refresh } = useData();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -28,7 +28,7 @@ function Shell() {
       <Navbar page={page} />
       <div className="nav-spacer" aria-hidden="true" />
       <main id="contenido" key={page} className="page">
-        {err && <div className="wrap"><p className="msg crit" role="alert">No se pudo leer la red de Stellar: {err}</p></div>}
+        {err && <div className="wrap errbar" role="alert"><p className="msg crit">No se pudo leer la red de Stellar. {err}</p><button className="copy" onClick={refresh}>Reintentar</button></div>}
         {page === "inicio" && <Home />}
         {page === "predios" && <Parcels selected={selected} />}
         {page === "mercado" && <Market />}
