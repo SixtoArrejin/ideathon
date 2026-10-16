@@ -11,3 +11,24 @@ dist
 oracle/.venv
 __pycache__
 .vercel
+
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secret*
+
+# Sistema / editor / herramientas locales
+.DS_Store
+.idea
+.vscode
+*.log
+.claude/settings.local.json
+.venv
+venv
+*.pyc
+.pytest_cache
+.cache
+coverage
