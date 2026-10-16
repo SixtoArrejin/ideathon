@@ -25,6 +25,7 @@ __pycache__/
 *.pem
 *.key
 secret*
+.mcp.json
 
 # Sistema / editor / herramientas locales
 .DS_Store
