@@ -17,3 +17,12 @@ export const PASSPHRASE = "Test SDF Network ; September 2015";
 export const READ_ACCOUNT = "GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL";
 export const PARCEL_IDS = ["IMPEN1", "CHACO1", "TACOP1"];
 export const EXPERT = "https://stellar.expert/explorer/testnet";
+
+/** Cuentas públicas de la demo en Testnet. */
+export const ACCOUNTS = [
+  { role: "Administrador (auditor)", address: "GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY" },
+  { role: "Oráculo", address: "GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL" },
+  { role: "Propietario de los predios", address: "GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD" },
+];
+/** Contrato de la primera entrega (sin lotes ni mercado), conservado como archivo. */
+export const V1_CONTRACT_ID = "CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG";
