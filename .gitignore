@@ -5,12 +5,18 @@ target
 .soroban
 .stellar
 
-# Web / oracle
+# Web
 node_modules
 dist
-oracle/.venv
-__pycache__
 .vercel
+
+# Oracle (solo código fuente en git; entorno local abajo)
+oracle/.venv/
+oracle/**/__pycache__/
+__pycache__/
+*.py[cod]
+.mypy_cache
+.ruff_cache
 
 # Secretos y entorno
 .env
