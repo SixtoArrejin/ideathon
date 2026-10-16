@@ -1,14 +1,34 @@
-import { useState } from "react";
-import { cancel, list, retire, type LotBalance } from "../chain";
+import { useEffect, useMemo, useState } from "react";
+import { cancel, getLot, list, retire, type LotBalance, type LotInfo } from "../chain";
 import CopyButton from "../components/CopyButton";
 import Modal from "../components/Modal";
 import { EXPERT, PAYMENT_ASSET_CODE } from "../config";
 import { useData, type OpenOffer } from "../data";
-import { fmt, fromUnits, lotLabel, short, toUnits } from "../lib";
+import { fmt, fromUnits, lotLabel, ndvi, PARCEL_LABELS, short, toUnits } from "../lib";
 import { hrefFor } from "../router";
 import { useUi } from "../ui";
 
 type Action = { mode: "offer" | "retire"; lot: LotBalance };
+const FRIENDBOT = "https://lab.stellar.org/account/fund";
+
+/** Saldo de XLM de la cuenta en Testnet, para saber si alcanza para comprar. */
+function useXlm(wallet: string) {
+  const [state, setState] = useState<{ xlm: number | null; funded: boolean | null }>({ xlm: null, funded: null });
+  useEffect(() => {
+    let live = true;
+    setState({ xlm: null, funded: null });
+    fetch(`https://horizon-testnet.stellar.org/accounts/${wallet}`, { signal: AbortSignal.timeout(10000) })
+      .then(async (r) => {
+        if (r.status === 404) return live && setState({ xlm: 0, funded: false });
+        const j = await r.json();
+        const n = j.balances?.find((b: { asset_type: string }) => b.asset_type === "native");
+        if (live) setState({ xlm: n ? Number(n.balance) : 0, funded: true });
+      })
+      .catch(() => { if (live) setState({ xlm: null, funded: null }); });
+    return () => { live = false; };
+  }, [wallet]);
+  return state;
+}
 
 function LotModal({ action, onClose }: { action: Action | null; onClose: () => void }) {
   const { wallet, transact } = useUi();
@@ -93,8 +113,22 @@ function LotModal({ action, onClose }: { action: Action | null; onClose: () => v
 
 export default function Account() {
   const { wallet, connecting, connect, disconnect, transact } = useUi();
-  const { lots, myOffers, refresh, lotsLoaded } = useData();
+  const { lots, myOffers, refresh, lotsLoaded, parcels, rets } = useData();
   const [action, setAction] = useState<Action | null>(null);
+  const [infos, setInfos] = useState<Record<string, LotInfo | null>>({});
+  const xlm = useXlm(wallet);
+
+  useEffect(() => {
+    let live = true;
+    Promise.all(lots.map(async (l) => [`${l.parcel}:${l.period}`, await getLot(l.parcel, l.period).catch(() => null)] as const))
+      .then((r) => { if (live) setInfos(Object.fromEntries(r)); });
+    return () => { live = false; };
+  }, [lots]);
+
+  const held = useMemo(() => lots.reduce((s, l) => s + l.amount, 0n), [lots]);
+  const custody = useMemo(() => myOffers.reduce((s, o) => s + o.available, 0n), [myOffers]);
+  const mine = useMemo(() => rets.filter((r) => r.holder === wallet), [rets, wallet]);
+  const burned = useMemo(() => mine.reduce((s, r) => s + r.amount, 0n), [mine]);
 
   if (!wallet) {
     return (
@@ -129,19 +163,24 @@ export default function Account() {
     });
   }
 
-  const inCustody = myOffers.reduce((s, o) => s + o.available, 0n);
-
   return (
     <div className="wrap page-pad">
       <header className="page-head">
         <p className="kicker">Mi cuenta</p>
         <h1>Tus lotes, tus ofertas, tus retiros</h1>
-        <p className="who"><span className="dot" aria-hidden="true" /> <span className="mono">{short(wallet, 8)}</span>
+        <p className="who"><span className="dot" aria-hidden="true" /> <span className="mono" title={wallet}>{short(wallet, 8)}</span>
           <CopyButton text={wallet} label="Copiar" />
           <a className="copy" href={`${EXPERT}/account/${wallet}`} target="_blank" rel="noreferrer">Stellar Expert ↗</a>
           <button className="copy" onClick={disconnect}>Desconectar</button>
         </p>
       </header>
+
+      <dl className="figures acct">
+        <div><dt>GTON en tu cuenta</dt><dd>{lotsLoaded ? fmt(held) : "…"}</dd><small>{lotsLoaded ? `en ${lots.length} ${lots.length === 1 ? "lote" : "lotes"}` : "leyendo la red"}</small></div>
+        <div><dt>En custodia del mercado</dt><dd>{lotsLoaded ? fmt(custody) : "…"}</dd><small>{myOffers.length} {myOffers.length === 1 ? "oferta abierta" : "ofertas abiertas"}</small></div>
+        <div><dt>XLM para comprar</dt><dd>{xlm.xlm === null ? "…" : xlm.xlm.toLocaleString("es-AR", { maximumFractionDigits: 1 })}</dd>
+          <small>{xlm.funded === false ? <>Cuenta sin fondear. <a href={FRIENDBOT} target="_blank" rel="noreferrer">Cargá XLM de prueba ↗</a></> : "saldo en Testnet"}</small></div>
+      </dl>
 
       <section className="section-tight">
         <h2>Mis lotes</h2>
@@ -150,37 +189,69 @@ export default function Account() {
         ) : lots.length === 0 ? (
           <div className="empty">
             <h3>Esta billetera no tiene lotes</h3>
-            <p className="muted">Los lotes los emite el oráculo al propietario de un predio. Si querés compensar sin tener tokens, comprá y quemá desde el <a href={hrefFor("mercado")}>mercado</a>.</p>
+            <p className="muted">Los lotes los emite el oráculo al propietario de un predio. Para compensar sin tener tokens, comprá y quemá desde el <a href={hrefFor("mercado")}>mercado</a>.</p>
+            <a className="btn small" href={hrefFor("mercado")}>Ir al mercado</a>
           </div>
         ) : (
           <ul className="lots">
-            {lots.map((l) => (
-              <li key={`${l.parcel}:${l.period}`} className="lotcard">
-                <span className="mono lot">{lotLabel(l.parcel, l.period)}</span>
-                <p className="big"><b className="mono">{fmt(l.amount)}</b> <span className="muted">GTON</span></p>
-                <div className="row">
-                  <button className="btn small" onClick={() => setAction({ mode: "offer", lot: l })}>Ofrecer</button>
-                  <button className="btn small ghost" onClick={() => setAction({ mode: "retire", lot: l })}>Retirar</button>
-                </div>
-              </li>
-            ))}
+            {lots.map((l) => {
+              const info = infos[`${l.parcel}:${l.period}`];
+              const frozen = parcels[l.parcel]?.frozen;
+              return (
+                <li key={`${l.parcel}:${l.period}`} className="lotcard">
+                  <header>
+                    <a className="mono lot" href={hrefFor("predios", l.parcel)}>{lotLabel(l.parcel, l.period)}</a>
+                    <span className={`tagp ${frozen ? "crit" : "ok"}`}>{frozen ? "Predio congelado" : "Predio activo"}</span>
+                  </header>
+                  <p className="big"><b className="mono">{fmt(l.amount)}</b> <span className="muted">GTON</span></p>
+                  <p className="muted small">{PARCEL_LABELS[l.parcel]?.name}{info ? ` · NDVI del lote ${ndvi(info.ndvi_milli)} · emitido ${fmt(info.minted)} t` : ""}</p>
+                  <div className="row">
+                    <button className="btn small" onClick={() => setAction({ mode: "offer", lot: l })}>Ofrecer</button>
+                    <button className="btn small ghost" onClick={() => setAction({ mode: "retire", lot: l })}>Retirar</button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
-        {inCustody > 0n && <p className="muted small">Además, {fmt(inCustody)} GTON están en custodia del mercado por tus ofertas abiertas.</p>}
       </section>
 
       <section className="section-tight">
         <h2>Mis ofertas abiertas</h2>
-        {!lotsLoaded ? <p className="muted">Leyendo tus ofertas…</p> : myOffers.length === 0 ? <p className="muted">No tenés ofertas abiertas.</p> : (
+        {!lotsLoaded ? <p className="muted">Leyendo tus ofertas…</p> : myOffers.length === 0 ? (
+          <p className="muted">No tenés ofertas abiertas. Ofrecé un lote desde la lista de arriba y aparece en el <a href={hrefFor("mercado")}>mercado</a>.</p>
+        ) : (
           <ul className="ledger">
             {myOffers.map((o) => (
-              <li key={o.id}>
-                <b className="mono">{fmt(o.available)} t · {lotLabel(o.parcel, o.period)}</b>
-                <span className="muted mono">{fromUnits(o.price_per_ton)} {PAYMENT_ASSET_CODE} por tonelada</span>
-                <span><button className="copy" onClick={() => cancelOffer(o)}>Cancelar oferta</button></span>
+              <li key={o.id} className="line">
+                <div>
+                  <b className="mono">{fmt(o.available)} t · {lotLabel(o.parcel, o.period)}</b>
+                  <span className="muted small">{fromUnits(o.price_per_ton)} {PAYMENT_ASSET_CODE} por tonelada · total {fromUnits(o.price_per_ton * o.available)} {PAYMENT_ASSET_CODE}</span>
+                </div>
+                <button className="copy" onClick={() => cancelOffer(o)}>Cancelar oferta</button>
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="section-tight">
+        <h2>Mis retiros</h2>
+        {mine.length === 0 ? (
+          <p className="muted">Todavía no retiraste toneladas desde esta cuenta. Si compraste en el mercado, esos retiros figuran como «vía mercado» en <a href={hrefFor("transparencia")}>Transparencia</a>.</p>
+        ) : (
+          <>
+            <p className="muted small">{fmt(burned)} tCO₂e quemadas desde esta cuenta.</p>
+            <ul className="ledger">
+              {mine.map((r, i) => (
+                <li key={i}>
+                  <b className="mono">{fmt(r.amount)} tCO₂e · {lotLabel(r.parcel, r.period)}</b>
+                  <span>{r.beneficiary}</span>
+                  <span className="muted small">{new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}</span>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </section>
       <LotModal key={action ? `${action.mode}:${action.lot.parcel}:${action.lot.period}` : "none"} action={action} onClose={() => setAction(null)} />

@@ -84,7 +84,7 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const transact = useCallback((opts: TxOptions) => setDialog({ kind: "tx", phase: "confirm", opts }), []);
   const api = useMemo(() => ({ wallet, connecting, connect, disconnect, transact }), [wallet, connecting, connect, disconnect, transact]);
   // Solo en desarrollo: permite abrir los modales desde la consola para probarlos sin una billetera.
-  if (import.meta.env.DEV) (window as unknown as { __ui?: Ui }).__ui = api;
+  if (import.meta.env.DEV) Object.assign(window, { __ui: api, __setWallet: setWallet });
 
   return (
     <Ctx.Provider value={api}>

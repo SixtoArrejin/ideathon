@@ -357,3 +357,12 @@ input, select { font: 400 1rem var(--body); padding: 9px 10px; border: 1px solid
 .doc-body .why3 { grid-template-columns: minmax(0, 1fr); margin: 0; }
 .radar-grid { margin-bottom: 8px; }
 .join { margin-top: 48px; }
+
+/* Mi cuenta */
+.figures.acct { margin-bottom: 8px; }
+.lotcard > header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.tagp { font: 500 0.64rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border: 1px solid currentColor; border-radius: 2px; }
+.tagp.ok { color: var(--ok); } .tagp.crit { color: var(--crit); }
+.ledger .line { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.ledger .line > div { display: grid; gap: 2px; min-width: 0; }
+.empty .btn { justify-self: start; margin-top: 4px; }
