@@ -1,28 +1,31 @@
 # Nombre e identidad
 
-## Elegido: **Quebracho**
+## Elegido: **Dosel**
 
-*Quebracho* viene de «quiebra-hacha» («rompe-hachas»): el nombre de los árboles de madera durísima del Gran Chaco (*Schinopsis*, quebracho colorado; *Aspidosperma quebracho-blanco*). Es el árbol emblema del bosque que este proyecto protege, y el nombre cuenta la tesis: una forma de que el bosque no se deje talar sin que se note.
+*Dosel* es la copa continua del bosque vista desde arriba (el "dosel forestal"). Es exactamente lo que mide el satélite: no el árbol, la copa. Por eso el nombre cuenta la propuesta de valor (verificar el bosque desde arriba) y combina con la marca, que es una copa hecha de píxeles de satélite.
 
-- Etimología: [Earth.com](https://www.earth.com/plant-encyclopedia/Angiosperms/Anacardiaceae/schinopsis/en/) y [Merriam-Webster](https://www.merriam-webster.com/dictionary/quebracho).
-- Una búsqueda web no mostró proyectos de carbono o blockchain con ese nombre. **No es un chequeo de marca registrada**: antes de usarlo comercialmente, consultar el INPI.
-- El token en el contrato sigue llamándose **GreenTon (GTON)**: su nombre está grabado en el contrato desplegado y cambiarlo exige redeploy y un nuevo ID.
+- Es una sola palabra, en español, corta y fácil de pronunciar. Frase: **«El bosque, verificado desde arriba.»**
+- Búsquedas web (octubre de 2026): no aparecieron proyectos de carbono, blockchain o monitoreo forestal llamados Dosel. Sí hay competidores del rubro con otros nombres (Pachama, Albo Climate, single.earth). **No es un chequeo de marca registrada**: consultar el INPI antes de un uso comercial.
+- El token del contrato sigue llamándose **GreenTon (GTON)**: ese nombre está grabado en el contrato desplegado y cambiarlo exige un redeploy y un nuevo ID.
 
-**Marca:** un árbol armado con píxeles de satélite (la opacidad de cada celda es el vigor de la vegetación, como el NDVI) dentro de las esquinas de un marco de relevamiento (el polígono del predio). Archivos: `web/public/logo-mark.svg`, `web/public/favicon.svg`, `web/public/og.png`, componente `web/src/components/Logo.tsx`.
+**Marca:** una copa armada con píxeles de satélite (la opacidad de cada celda es el vigor de la vegetación, como el NDVI) dentro de las esquinas de un marco de relevamiento (el polígono del predio). Archivos: `web/public/logo-mark.svg`, `web/public/favicon.svg`, `web/public/og.png`, componente `web/src/components/Logo.tsx`.
 
 **Color:** verde bosque profundo sobre papel verdoso frío; rojo ladrillo solo para el estado "congelado". **Tipografía:** Familjen Grotesk (títulos), IBM Plex Sans (texto), IBM Plex Mono (datos).
 
-## Alternativas para decidir mañana
+## Por qué no Quebracho
+
+Fue la primera elección: *quiebra-hacha* es el árbol emblema del Gran Chaco ([Earth.com](https://www.earth.com/plant-encyclopedia/Angiosperms/Anacardiaceae/schinopsis/en/)). Se descartó porque habla de la región y de la tala, pero no de lo que hace el producto (verificar y certificar con datos satelitales), y porque se asocia a la industria extractiva del tanino y la madera.
+
+## Alternativas
 
 | Nombre | Idea | A favor | En contra |
 |---|---|---|---|
-| **Quebracho** (elegido) | Árbol que rompe hachas | Identidad del Chaco, historia propia, pronunciable | Se asocia también al tanino y a la industria extractiva histórica |
-| **Guardamonte** | «Guardar el monte»; también la pieza de cuero del gaucho | Dice protección, 100 % argentino | Es también el nombre del guardamonte de las armas |
-| **Umbral** | El umbral de NDVI que congela un predio | Corto, técnico, claro | Genérico; muchos productos se llaman así |
-| **Palo Santo** | Árbol del Chaco | Memorable | Asociado a incienso y esoterismo |
-| **Ñandubay** | Árbol del NEA (Corrientes, Entre Ríos) | Muy local, casi sin competencia | Difícil de pronunciar y escribir fuera de la región |
-| **Pixel Monte** | Píxel de satélite + monte | Explica la tecnología | Suena a startup genérica |
-| **Sentinela** | Guiño a Sentinel-2 | Conecta con el satélite | Parecido a nombres de seguridad informática |
-| **Yatay** | Palmera de Corrientes | Local y corto | Menos relación con la tala que quebracho |
+| **Dosel** (elegido) | La copa del bosque vista desde arriba | Es lo que mide el satélite, unívoco, corto | Término técnico forestal; algunos pueden no conocerlo |
+| **Testigo** | El satélite como testigo imparcial | Dice "verificación" de forma directa | No evoca bosque ni satélite; "testigo" también es el del relevo |
+| **Atalaya** | Torre de vigilancia | Evoca mirar desde arriba y cuidar | Muy usado como nombre de empresas |
+| **Vigía** | El que vigila | Corto, claro | Muy genérico |
+| **Umbral** | El umbral de NDVI que congela un predio | Corto, técnico | Genérico, no habla de bosque |
+| **Guardamonte** | Guardar el monte | Local, protección | También es la pieza del arma y del gaucho |
+| **Quebracho** | Árbol del Chaco | Identidad regional | Ver arriba |
 
-Si se cambia de nombre: reemplazar en `web/index.html`, `web/src/App.tsx`, `README.md`, `DEPLOY.md`, `docs/`, el deck (`docs/pitch/deck.html`, regenerar el PDF) y revisar `Logo.tsx`/`og.html`.
+Si se cambia de nombre: reemplazar en `web/index.html`, `web/src/App.tsx`, `README.md`, `DEPLOY.md`, `docs/`, el deck (`docs/pitch/deck.html`, regenerar el PDF), `web/public/og.png` y `web/package.json`.

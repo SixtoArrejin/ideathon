@@ -67,11 +67,12 @@ export default function App() {
         <div className="wrap bar">
           <div className="brand">
             <Logo size={30} />
-            Quebracho
+            Dosel
           </div>
           <div className="contract">
             <span className="pill">Testnet</span>
-            <a className="mono" href={`${EXPERT}/contract/${CONTRACT_ID}`} target="_blank" rel="noreferrer">{short(CONTRACT_ID, 5)}</a>
+            <span className="muted">Contrato</span>
+            <a className="mono" href={`${EXPERT}/contract/${CONTRACT_ID}`} target="_blank" rel="noreferrer" title={CONTRACT_ID}>{short(CONTRACT_ID, 5)}</a>
             <CopyId />
           </div>
         </div>
@@ -79,8 +80,8 @@ export default function App() {
 
       <main className="wrap">
         <section className="intro">
-          <h1>El árbol que rompe hachas, ahora con respaldo satelital.</h1>
-          <p>Quebracho viene de «quiebra-hacha», el árbol emblema del Gran Chaco, donde se concentra la mayor parte del desmonte del país. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
+          <h1>El bosque, verificado desde arriba.</h1>
+          <p>Dosel es la copa del bosque vista desde arriba, justo lo que mide el satélite. Un oráculo mide la vegetación de cada predio con imágenes Sentinel-2. Con esa medición el contrato emite GreenTon, o congela el predio si el bosque cayó. Quien compensa su huella quema los tokens y queda registrado en Stellar.</p>
           <dl className="figures">
             <div><dt>En circulación</dt><dd>{supply === null ? "…" : fmt(supply)}<small>GTON · 1 = 1 tCO₂e</small></dd></div>
             <div><dt>Retiradas</dt><dd>{retired === null ? "…" : fmt(retired)}<small>tCO₂e quemadas</small></dd></div>
@@ -97,7 +98,7 @@ export default function App() {
           <div className="detail">
             <ul className="tabs" role="tablist" aria-label="Predio">
               {PARCEL_IDS.map((id) => (
-                <li key={id}>
+                <li key={id} role="presentation">
                   <button role="tab" aria-selected={id === selected} className={`tab ${parcels[id]?.frozen ? "is-frozen" : ""}`} onClick={() => onSelect(id)}>
                     <span className="mono">{id}</span>
                     <span>{PARCEL_LABELS[id].name}</span>
@@ -123,15 +124,15 @@ export default function App() {
 
                 <h3>Evidencia satelital</h3>
                 <div className="tablewrap"><table>
-                  <thead><tr><th>Período</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
+                  <thead><tr><th>Período (feb–mar)</th><th>NDVI</th><th>Escena Sentinel-2</th><th>Resultado</th><th></th></tr></thead>
                   <tbody>
-                    {evidence.map((v) => (
+                    {evidence.map((v, i) => (
                       <tr key={v.tx}>
-                        <td className="mono">{String(v.period).replace(/(\d{4})(\d{2})/, "$1-$2")}</td>
+                        <td className="mono">{String(v.period).replace(/(\d{4})(\d{2})/, "$1-$2")}{i === 0 && <span className="tagbase">línea base</span>}</td>
                         <td className="mono">{v.ndvi.toFixed(3).replace(".", ",")}</td>
                         <td><a href={STAC_ITEM(v.scene)} target="_blank" rel="noreferrer" className="mono">{v.scene_date}</a></td>
                         <td>{Number(v.minted) > 0 ? <span className="ok">+{fmt(Number(v.minted))} GTON</span> : <span className="crit">Sin emisión</span>}</td>
-                        <td><a href={`${EXPERT}/tx/${v.tx}`} target="_blank" rel="noreferrer">tx</a></td>
+                        <td><a href={`${EXPERT}/tx/${v.tx}`} target="_blank" rel="noreferrer">Ver tx ↗</a></td>
                       </tr>
                     ))}
                     {evidence.length === 0 && <tr><td colSpan={5} className="muted">Sin verificaciones registradas.</td></tr>}
@@ -173,8 +174,8 @@ export default function App() {
         </section>
       </main>
 
-      <footer className="wrap foot">
-        <p>El factor que convierte NDVI en tCO₂e es simplificado y no corresponde a una metodología certificada. En esta versión el oráculo es una sola clave y la red es Testnet.</p>
+      <footer className="foot">
+        <div className="wrap"><p>El factor que convierte NDVI en tCO₂e es simplificado y no corresponde a una metodología certificada. En esta versión el oráculo es una sola clave y la red es Testnet.</p></div>
       </footer>
     </>
   );

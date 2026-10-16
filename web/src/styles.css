@@ -101,7 +101,9 @@ input { font: 400 1rem var(--body); padding: 9px 10px; border: 1px solid var(--l
 .ledger { list-style: none; padding: 0; margin: 0; display: grid; }
 .ledger li { display: grid; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .ledger b { font-weight: 500; }
-.foot { padding-block: 20px 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
+.foot { border-top: 1px solid var(--line); color: var(--muted); font-size: 0.82rem; }
+.foot .wrap { padding-block: 20px 40px; }
+.tagbase { margin-left: 8px; font: 500 0.65rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
 .foot p { max-width: 70ch; margin: 0; }
 
 @media (max-width: 860px) {
@@ -112,3 +114,4 @@ input { font: 400 1rem var(--body); padding: 9px 10px; border: 1px solid var(--l
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 .leaflet-container { font-family: var(--body); }
+.contract .muted { font-size: 0.82rem; }

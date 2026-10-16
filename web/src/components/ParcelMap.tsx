@@ -18,6 +18,7 @@ export default function ParcelMap({ parcels, selected, onSelect }: Props) {
     const m = L.map(el.current, { zoomControl: true, attributionControl: true });
     L.tileLayer(TILES, { maxZoom: 17, attribution: "Imagen © Esri, Maxar, Earthstar Geographics" }).addTo(m);
     m.setView([-26, -60.5], 7);
+    L.control.scale({ imperial: false, position: "bottomleft" }).addTo(m);
     map.current = m;
     return () => { m.remove(); map.current = null; layers.current = {}; };
   }, []);
