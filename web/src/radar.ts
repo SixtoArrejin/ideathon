@@ -29,6 +29,7 @@ export function useLatestScenes(bboxes: Record<string, string>) {
       try {
         const res = await fetch(STAC_SEARCH, {
           method: "POST",
+          signal: AbortSignal.timeout(12000),
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             collections: ["sentinel-2-l2a"],

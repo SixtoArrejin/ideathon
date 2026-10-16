@@ -1,8 +1,43 @@
 export default function Logo({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden="true" className="logo">
-      <path d="M3 10V3h7" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" /><path d="M30 3h7v7" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" /><path d="M37 30v7h-7" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" /><path d="M10 37H3v-7" fill="none" stroke="var(--ink)" strokeWidth="2" strokeLinecap="square" />
-      <rect x="14.4" y="8.5" width="3.4" height="3.4" fill="currentColor" opacity="0.55" /><rect x="18.3" y="8.5" width="3.4" height="3.4" fill="currentColor" opacity="0.9" /><rect x="22.2" y="8.5" width="3.4" height="3.4" fill="currentColor" opacity="0.7" /><rect x="10.5" y="12.4" width="3.4" height="3.4" fill="currentColor" opacity="0.65" /><rect x="14.4" y="12.4" width="3.4" height="3.4" fill="currentColor" opacity="0.95" /><rect x="18.3" y="12.4" width="3.4" height="3.4" fill="currentColor" opacity="1" /><rect x="22.2" y="12.4" width="3.4" height="3.4" fill="currentColor" opacity="0.85" /><rect x="26.1" y="12.4" width="3.4" height="3.4" fill="currentColor" opacity="0.6" /><rect x="6.6" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="0.5" /><rect x="10.5" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="0.8" /><rect x="14.4" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="1" /><rect x="18.3" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="0.9" /><rect x="22.2" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="1" /><rect x="26.1" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="0.75" /><rect x="30.0" y="16.3" width="3.4" height="3.4" fill="currentColor" opacity="0.45" /><rect x="10.5" y="20.2" width="3.4" height="3.4" fill="currentColor" opacity="0.55" /><rect x="14.4" y="20.2" width="3.4" height="3.4" fill="currentColor" opacity="0.8" /><rect x="18.3" y="20.2" width="3.4" height="3.4" fill="currentColor" opacity="0.95" /><rect x="22.2" y="20.2" width="3.4" height="3.4" fill="currentColor" opacity="0.7" /><rect x="26.1" y="20.2" width="3.4" height="3.4" fill="currentColor" opacity="0.5" /><rect x="18.3" y="24.1" width="3.4" height="3.4" fill="currentColor" opacity="1" /><rect x="18.3" y="28.0" width="3.4" height="3.4" fill="currentColor" opacity="1" /><rect x="18.3" y="31.9" width="3.4" height="3.4" fill="currentColor" opacity="1" />
+      <rect width="40" height="40" rx="6" fill="var(--accent)" />
+      <rect x="11.80" y="5.35" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.6} />
+      <rect x="16.10" y="5.35" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.9} />
+      <rect x="20.40" y="5.35" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.85} />
+      <rect x="24.70" y="5.35" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.6} />
+      <rect x="7.50" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.55} />
+      <rect x="11.80" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.85} />
+      <rect x="16.10" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="20.40" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.95} />
+      <rect x="24.70" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.8} />
+      <rect x="29.00" y="9.65" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.55} />
+      <rect x="3.20" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.5} />
+      <rect x="7.50" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.8} />
+      <rect x="11.80" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.95} />
+      <rect x="16.10" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="20.40" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.9} />
+      <rect x="24.70" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="29.00" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.75} />
+      <rect x="33.30" y="13.95" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.5} />
+      <rect x="3.20" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.6} />
+      <rect x="7.50" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.85} />
+      <rect x="11.80" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="16.10" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.9} />
+      <rect x="20.40" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="24.70" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.95} />
+      <rect x="29.00" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.8} />
+      <rect x="33.30" y="18.25" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.55} />
+      <rect x="7.50" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.5} />
+      <rect x="11.80" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.75} />
+      <rect x="16.10" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.9} />
+      <rect x="20.40" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.85} />
+      <rect x="24.70" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.7} />
+      <rect x="29.00" y="22.55" width="3.5" height="3.5" fill="var(--accent-ink)" opacity={0.5} />
+      <rect x="16.10" y="26.85" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="20.40" y="26.85" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="16.10" y="31.15" width="3.5" height="3.5" fill="var(--accent-ink)" />
+      <rect x="20.40" y="31.15" width="3.5" height="3.5" fill="var(--accent-ink)" />
     </svg>
   );
 }
