@@ -50,6 +50,8 @@ La clave secreta de `owner` vive en la máquina de quien hizo el setup: `stellar
 
 GreenTon v2 (lotes) es un contrato nuevo: **nuevo ID**, y los predios se vuelven a registrar y verificar. Los GTON del contrato v1 no se migran. Ver [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
 
+> **Cambios de la rama `feat/modelo-de-negocio` (no desplegados):** `register_parcel` exige la firma del `admin` (el script `run.py register` ya firma como `admin`) y el mercado recibe `--treasury` y `--fee_bps` en el constructor. Desplegarlos cambia los IDs de ambos contratos: hay que actualizar `web/src/config.ts` y el README, y repetir los pasos 5 a 8. La entrega actual usa los contratos ya desplegados.
+
 **Ya está desplegado y verificado en Testnet** (IDs y hashes en el README). Esta sección es para repetirlo o redesplegar. Si se redespliega, actualizar `web/src/config.ts` y el README.
 
 ```sh
@@ -67,7 +69,8 @@ stellar contract id asset --asset native --network testnet
 
 # 4. Mercado (anotar el ID que imprime)
 stellar contract deploy --wasm target/wasm32v1-none/release/market.wasm --source admin \
-  --network testnet --alias market -- --greenton <ID de GreenTon v2> --payment_asset <ID del SAC>
+  --network testnet --alias market -- --greenton <ID de GreenTon v2> --payment_asset <ID del SAC> \
+  --treasury $(stellar keys address admin) --fee_bps 500   # 500 = 5 %, tope 1000
 
 # 5. Predios y verificaciones (con el venv del oráculo)
 cd oracle

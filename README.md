@@ -50,7 +50,7 @@ Sentinel-2 L2A (Planetary Computer, STAC)
         │  NDVI medio del bbox (oracle/ndvi.py)
         ▼
 Oráculo (Python) ──firma──► GreenTon v2 ◄──firma── Freighter (propietario)
-                              • register_parcel     • submit_verification (solo oráculo)
+                              • register_parcel (solo admin)     • submit_verification (solo oráculo)
                               • transfer / retire por lote   • unfreeze (solo admin/auditor)
                                      ▲
                                      │ transfer (custodia) · retire (quema)
@@ -92,7 +92,8 @@ stellar contract deploy --wasm target/wasm32v1-none/release/greenton.wasm --sour
   --network testnet --alias greenton -- --admin $(stellar keys address admin) --oracle $(stellar keys address oracle)
 stellar contract deploy --wasm target/wasm32v1-none/release/market.wasm --source admin \
   --network testnet --alias market -- --greenton <ID que imprimió el deploy de greenton> \
-  --payment_asset $(stellar contract id asset --asset native --network testnet)
+  --payment_asset $(stellar contract id asset --asset native --network testnet) \
+  --treasury $(stellar keys address admin) --fee_bps 500      # comisión de plataforma: 500 = 5 % (tope 10 %)
 
 # Oráculo
 python3 -m venv oracle/.venv && oracle/.venv/bin/pip install pystac-client planetary-computer rasterio numpy
