@@ -3,6 +3,8 @@
 *Dosel* es la copa del bosque vista desde arriba, lo que mide el satélite. Créditos de carbono de **bosque nativo** del NEA/Gran Chaco, **verificados por satélite** y emitidos/retirados en **Stellar (Soroban)**.
 Proyecto para el IDEATHON Neatech 2026 · Stellar Track.
 
+**Video de presentación (2 min):** [youtube.com/watch?v=Uxa_8bNBiZ4](https://www.youtube.com/watch?v=Uxa_8bNBiZ4)
+
 **Demo en vivo:** [ideathon-henna.vercel.app](https://ideathon-henna.vercel.app) · funciona sobre Stellar Testnet; para comprar, publicar o retirar hace falta [Freighter](https://www.freighter.app) en Testnet.
 
 **No confiamos en la palabra del dueño del campo.** Un oráculo calcula el NDVI real de Sentinel-2 sobre el polígono GPS del predio
