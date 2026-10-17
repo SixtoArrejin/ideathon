@@ -1,0 +1,85 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      pointer-events: none;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .cap-bar {
+      position: absolute;
+      left: 160px;
+      right: 160px;
+      bottom: 20px;
+      height: 68px;
+      background-color: #14201a;
+      border: 2px solid #c8f25c;
+      border-radius: 14px;
+      padding: 0 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      box-shadow: 0 10px 24px rgba(20, 32, 26, 0.16);
+    }
+
+    .cap-line {
+      width: 100%;
+      font-size: 21px;
+      font-weight: 600;
+      color: #eef3e4;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .cap-em {
+      color: #c8f25c;
+      font-weight: 700;
+    }
+  </style>
+
+  <div id="root" data-composition-id="captions-overlay" data-width="1920" data-height="1080" data-start="0" data-duration="120">
+    <div id="cap-01" class="clip cap-bar" data-start="0.2" data-duration="13.5" data-track-index="0">
+      <div class="cap-line">En 2025 el norte argentino perdió <span class="cap-em">210.000 hectáreas</span> de bosque nativo, y el mercado tradicional falla porque nadie verifica si los árboles siguen en pie.</div>
+    </div>
+
+    <div id="cap-02" class="clip cap-bar" data-start="14.2" data-duration="13.5" data-track-index="1">
+      <div class="cap-line">Con <span class="cap-em">Dosel</span>, las empresas contrarrestan su <span class="cap-em">huella de CO₂</span> comprando toneladas verificadas por <span class="cap-em">Sentinel-2</span> y financiando al dueño del campo.</div>
+    </div>
+
+    <div id="cap-03" class="clip cap-bar" data-start="28.2" data-duration="15.5" data-track-index="0">
+      <div class="cap-line">En <span class="cap-em">Predios</span>, cualquiera audita cada polígono: en el <span class="cap-em">Impenetrable</span> y <span class="cap-em">P.N. Chaco</span> el NDVI se mantiene sobre 0,768, respaldando 56.261 créditos.</div>
+    </div>
+
+    <div id="cap-04" class="clip cap-bar" data-start="44.2" data-duration="17.5" data-track-index="1">
+      <div class="cap-line">En <span class="cap-em">Taco Pozo</span> el NDVI cayó 20 puntos y <span class="cap-em">Soroban lo congeló solo</span> (0 tokens); cruzado con <span class="cap-em">cobertura arbórea a 10m</span> para filtrar falsos positivos.</div>
+    </div>
+
+    <div id="cap-05" class="clip cap-bar" data-start="62.2" data-duration="17.5" data-track-index="0">
+      <div class="cap-line">En el <span class="cap-em">Mercado</span>, la empresa contrarresta sus emisiones con <span class="cap-em">Freighter</span>: en una sola transacción financia al dueño del campo y <span class="cap-em">quema 500 toneladas</span>.</div>
+    </div>
+
+    <div id="cap-06" class="clip cap-bar" data-start="80.2" data-duration="15.5" data-track-index="1">
+      <div class="cap-line">En el <span class="cap-em">Registro de retiros</span> se obtiene el <span class="cap-em">Certificado oficial con QR</span> verificable en <span class="cap-em">Stellar Expert</span>, con alta auditada en el <span class="cap-em">Radar del Chaco</span>.</div>
+    </div>
+
+    <div id="cap-07" class="clip cap-bar" data-start="96.2" data-duration="13.5" data-track-index="0">
+      <div class="cap-line">Registrar el bosque es <span class="cap-em">gratis para el productor</span>: Dosel descuenta solo un <span class="cap-em">5% atómico</span> al venderse y envía el <span class="cap-em">95% directo</span> a quien conserva el monte.</div>
+    </div>
+
+    <div id="cap-08" class="clip cap-bar" data-start="110.2" data-duration="9.5" data-track-index="1">
+      <div class="cap-line">En <span class="cap-em">Dosel</span>, compensar emisiones financia a quien cuida el monte. <span class="cap-em">Cada tonelada tiene un satélite detrás.</span></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      window.__timelines = window.__timelines || {};
+      window.__timelines["captions-overlay"] = tl;
+    })();
+  </script>
+</template>

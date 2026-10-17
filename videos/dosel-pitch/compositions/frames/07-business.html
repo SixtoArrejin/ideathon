@@ -1,0 +1,188 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s7-stage {
+      position: absolute;
+      top: 52px;
+      left: 72px;
+      right: 72px;
+      height: 876px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s7-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .s7-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1d5c3e;
+      letter-spacing: 0.12em;
+      margin-bottom: 10px;
+    }
+
+    .s7-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 60px;
+      font-weight: 900;
+      color: #14201a;
+      letter-spacing: -0.03em;
+      line-height: 1.04;
+      margin: 0;
+    }
+
+    .s7-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .s7-card {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-top: 8px solid #1d5c3e;
+      border-radius: 22px;
+      padding: 42px 38px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 12px 32px rgba(20, 32, 26, 0.06);
+    }
+
+    .s7-card-dark {
+      background-color: #14201a;
+      color: #eef3e4;
+      border: 2px solid #14201a;
+      border-top: 8px solid #c8f25c;
+    }
+
+    .s7-c-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #4a5d52;
+    }
+
+    .s7-c-num {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 86px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: #1d5c3e;
+    }
+
+    .s7-c-lbl {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #14201a;
+    }
+
+    .s7-roadmap {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-radius: 20px;
+      padding: 30px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .s7-rm-left {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #c8f25c;
+      letter-spacing: 0.08em;
+    }
+
+    .s7-rm-steps {
+      display: flex;
+      gap: 24px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .s7-rm-pill {
+      background-color: #1d3326;
+      border: 1px solid #c8f25c;
+      color: #eef3e4;
+      padding: 12px 24px;
+      border-radius: 12px;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-07" data-width="1920" data-height="1080" data-start="0" data-duration="14">
+    <div class="s7-stage">
+      <div id="s7-head" class="s7-header">
+        <div>
+          <div class="s7-kicker">07 · MODELO DE NEGOCIO · LIQUIDACIÓN ATÓMICA EN SOROBAN</div>
+          <h2 class="s7-title">Sin costos de entrada para el productor.</h2>
+        </div>
+      </div>
+
+      <div class="s7-cards">
+        <div id="s7-c1" class="s7-card">
+          <span class="s7-c-tag">ALTA DEL PREDIO</span>
+          <span class="s7-c-num">USD 0</span>
+          <span class="s7-c-lbl">Cero barrera de entrada para el dueño del bosque</span>
+        </div>
+
+        <div id="s7-c2" class="s7-card s7-card-dark">
+          <span class="s7-c-tag" style="color: #c8f25c;">DIRECTO AL PRODUCTOR</span>
+          <span class="s7-c-num" style="color: #c8f25c;">95%</span>
+          <span class="s7-c-lbl" style="color: #eef3e4;">Acreditado en su billetera Stellar en menos de 5 s</span>
+        </div>
+
+        <div id="s7-c3" class="s7-card">
+          <span class="s7-c-tag">COMISIÓN PROTOCOLO</span>
+          <span class="s7-c-num">5%</span>
+          <span class="s7-c-lbl">Descontada en el contrato solo cuando se vende</span>
+        </div>
+      </div>
+
+      <div id="s7-rm" class="s7-roadmap">
+        <span class="s7-rm-left">HOJA DE RUTA → MAINNET</span>
+        <div class="s7-rm-steps">
+          <span class="s7-rm-pill">1. Umbrales INTA / CONICET</span>
+          <span class="s7-rm-pill">2. Oráculo Multifirma</span>
+          <span class="s7-rm-pill">3. Pagos USDC en Mainnet</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s7-head", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s7-c1", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.45);
+      tl.fromTo("#s7-c2", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.85);
+      tl.fromTo("#s7-c3", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.25);
+      tl.fromTo("#s7-rm", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, 2.4);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-07"] = tl;
+    })();
+  </script>
+</template>

@@ -1,0 +1,436 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s6-stage {
+      position: absolute;
+      top: 48px;
+      left: 64px;
+      right: 64px;
+      height: 880px;
+      display: grid;
+      grid-template-columns: 1140px 612px;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .s6-viewer {
+      position: relative;
+      width: 1140px;
+      height: 780px;
+      background-color: #f6f6f1;
+      border: 3px solid #14201a;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 20px 48px rgba(20, 32, 26, 0.14);
+    }
+
+    .s6-beat {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Beat 1: App Registro de retiros (exact match to Transparency.tsx #retiros) */
+    .s6-app-retiros {
+      background-color: #f6f6f1;
+      padding: 36px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      box-sizing: border-box;
+    }
+
+    .s6-app-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #d8dfd2;
+    }
+
+    .s6-nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: #14201a;
+    }
+
+    .s6-nav-links {
+      display: flex;
+      gap: 28px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #4a5d52;
+    }
+
+    .s6-nav-active {
+      color: #14201a;
+      border-bottom: 2px solid #1d5c3e;
+      padding-bottom: 4px;
+    }
+
+    .s6-nav-wallet {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      background-color: #e8ede2;
+      color: #1d5c3e;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid #c5d0c0;
+    }
+
+    .s6-ret-head {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .s6-ret-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1d5c3e;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .s6-ret-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 42px;
+      font-weight: 900;
+      color: #14201a;
+      letter-spacing: -0.03em;
+      margin: 0;
+    }
+
+    .s6-ret-sub {
+      font-size: 18px;
+      color: #4a5d52;
+      line-height: 1.4;
+      max-width: 920px;
+    }
+
+    .s6-ledger {
+      display: flex;
+      flex-direction: column;
+      border-top: 2px solid #14201a;
+      margin-top: 8px;
+    }
+
+    .s6-row {
+      display: grid;
+      grid-template-columns: 180px 280px 1fr;
+      align-items: center;
+      padding: 26px 20px;
+      border-bottom: 1px solid #d4ddd0;
+      background-color: #ffffff;
+    }
+
+    .s6-row-hl {
+      background-color: #eef5e6;
+      border-left: 6px solid #1d5c3e;
+    }
+
+    .s6-r-amt {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: #14201a;
+    }
+
+    .s6-r-ben {
+      font-size: 19px;
+      font-weight: 700;
+      color: #14201a;
+    }
+
+    .s6-r-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      color: #4a5d52;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .s6-r-lot {
+      color: #1d5c3e;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .s6-cert-btn {
+      background-color: #1d5c3e;
+      color: #ffffff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(29, 92, 62, 0.25);
+    }
+
+    /* Beat 2: Real Certificado · Dosel.pdf viewer */
+    .s6-pdf-wrap {
+      background-color: #dce3d6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .s6-pdf-bar {
+      width: 100%;
+      height: 58px;
+      background-color: #14201a;
+      color: #eef3e4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      box-sizing: border-box;
+      z-index: 5;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .s6-pdf-pill {
+      background-color: #c8f25c;
+      color: #14201a;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .s6-pdf-viewport {
+      position: relative;
+      width: 1060px;
+      height: 722px;
+      overflow: hidden;
+      background-color: #ffffff;
+      box-shadow: 0 12px 36px rgba(20, 32, 26, 0.18);
+    }
+
+    .s6-pdf-img {
+      width: 1060px;
+      height: 1499px;
+      display: block;
+      object-fit: cover;
+    }
+
+    .s6-pointer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 48px;
+      height: 48px;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    /* Right column: 3 Onboarding Filters */
+    .s6-right {
+      height: 780px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s6-r-head {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-left: 10px solid #c8f25c;
+      border-radius: 20px;
+      padding: 34px 36px;
+    }
+
+    .s6-r-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #c8f25c;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .s6-r-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 40px;
+      font-weight: 900;
+      line-height: 1.08;
+      margin: 0;
+    }
+
+    .s6-step-card {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-left: 10px solid #1d5c3e;
+      border-radius: 18px;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 10px 24px rgba(20, 32, 26, 0.05);
+    }
+
+    .s6-st-num {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1d5c3e;
+      letter-spacing: 0.08em;
+    }
+
+    .s6-st-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      font-weight: 900;
+      color: #14201a;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-06" data-width="1920" data-height="1080" data-start="0" data-duration="16">
+    <div class="s6-stage">
+      <div id="s6-viewer" class="s6-viewer">
+        <!-- Beat 1 (0s - 4.4s): App Registro de retiros -->
+        <div id="s6-b1" class="clip s6-beat s6-app-retiros" data-start="0" data-duration="4.4" data-track-index="0">
+          <div class="s6-app-nav">
+            <div class="s6-nav-brand">
+              <img src="assets/logo-mark.svg" alt="Dosel" style="width: 26px; height: 26px;" />
+              <span>Dosel</span>
+            </div>
+            <div class="s6-nav-links">
+              <span>Inicio</span>
+              <span>Predios</span>
+              <span>Mercado</span>
+              <span>Radar</span>
+              <span class="s6-nav-active">Transparencia</span>
+            </div>
+            <span class="s6-nav-wallet">● GCGU…CRTN</span>
+          </div>
+
+          <div class="s6-ret-head">
+            <span class="s6-ret-kicker">TRANSPARENCIA · HISTORIAL ON-CHAIN</span>
+            <h2 class="s6-ret-title">Registro de retiros</h2>
+            <div class="s6-ret-sub">
+              Cada fila es una quema irreversible en Soroban. Desde acá abrimos y descargamos el Certificado de Compensación con QR de cada retiro.
+            </div>
+          </div>
+
+          <div class="s6-ledger">
+            <div class="s6-row s6-row-hl">
+              <span class="s6-r-amt">500 tCO₂e</span>
+              <span class="s6-r-ben">Empresa Demo SA - huella 2026</span>
+              <div class="s6-r-meta">
+                <span class="s6-r-lot">IMPEN1 · 2026-03</span>
+                <span>· vía mercado · 16/10/2026 ·</span>
+                <span class="s6-cert-btn">Certificado ↗</span>
+              </div>
+            </div>
+
+            <div class="s6-row">
+              <span class="s6-r-amt">15 tCO₂e</span>
+              <span class="s6-r-ben">Asymmetric</span>
+              <div class="s6-r-meta">
+                <span class="s6-r-lot">IMPEN1 · 2026-03</span>
+                <span>· vía mercado · 17/10/2026 ·</span>
+                <span class="s6-cert-btn" style="background-color: #e8ede2; color: #1d5c3e; box-shadow: none;">Certificado ↗</span>
+              </div>
+            </div>
+
+            <div class="s6-row">
+              <span class="s6-r-amt">100 tCO₂e</span>
+              <span class="s6-r-ben">Cooperativa El Breal</span>
+              <div class="s6-r-meta">
+                <span class="s6-r-lot">CHACO1 · 2026-03</span>
+                <span>· vía mercado · 16/10/2026 ·</span>
+                <span class="s6-cert-btn" style="background-color: #e8ede2; color: #1d5c3e; box-shadow: none;">Certificado ↗</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Beat 2 (4.4s - 16.0s): Real Certificado · Dosel.pdf -->
+        <div id="s6-b2" class="clip s6-beat s6-pdf-wrap" data-start="4.4" data-duration="11.6" data-track-index="0">
+          <div class="s6-pdf-bar">
+            <span>📄 Certificado · Dosel.pdf — /#/certificado/0</span>
+            <span class="s6-pdf-pill">PDF OFICIAL · QR VERIFICABLE</span>
+          </div>
+          <div class="s6-pdf-viewport" data-layout-allow-overflow>
+            <img id="s6-pdf-img" class="s6-pdf-img" src="assets/certificado-pdf.png" alt="Certificado · Dosel.pdf" />
+          </div>
+        </div>
+
+        <!-- Accurate SVG Mouse Cursor -->
+        <svg id="s6-ptr" class="s6-pointer" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="6" fill="rgba(200, 242, 92, 0.55)" />
+          <path d="M4 4 L17 36 L23 23 L36 17 Z" fill="#14201a" stroke="#c8f25c" stroke-width="3" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <div class="s6-right">
+        <div id="s6-rh" class="s6-r-head">
+          <div class="s6-r-kicker">06 · CERTIFICADO PDF + ALTA CURADA</div>
+          <h3 class="s6-r-title">Ningún bosque entra a ciegas</h3>
+        </div>
+
+        <div id="s6-s1" class="s6-step-card">
+          <span class="s6-st-num">FILTRO 01 · DOMINIO LEGAL</span>
+          <span class="s6-st-title">Título catastral y polígono GeoJSON</span>
+        </div>
+
+        <div id="s6-s2" class="s6-step-card">
+          <span class="s6-st-num">FILTRO 02 · HISTORIAL AMBIENTAL</span>
+          <span class="s6-st-title">Cruce con Radar del Chaco y Ley 26.331</span>
+        </div>
+
+        <div id="s6-s3" class="s6-step-card">
+          <span class="s6-st-num">FILTRO 03 · REGISTRO ON-CHAIN</span>
+          <span class="s6-st-title">Firma Admin en Soroban + Línea Base</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s6-viewer", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s6-rh", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 0.4);
+      tl.fromTo("#s6-s1", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 1.2);
+      tl.fromTo("#s6-s2", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.0);
+      tl.fromTo("#s6-s3", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.8);
+
+      // Pointer moves to "Certificado ↗" button in row #1 (x=995, y=340) and clicks at 3.9s
+      tl.fromTo("#s6-ptr", { x: 480, y: 240, scale: 1 }, { x: 995, y: 340, scale: 1, duration: 1.3, ease: "power2.inOut" }, 1.0);
+      tl.to("#s6-ptr", { scale: 0.78, duration: 0.15, yoyo: true, repeat: 1 }, 3.9);
+
+      // Once Certificado · Dosel.pdf opens at 4.4s, start at top (-24px) then scroll smoothly to show the QR code at bottom (-520px)
+      tl.fromTo("#s6-pdf-img", { y: -24 }, { y: -520, duration: 2.6, ease: "power2.inOut" }, 6.4);
+
+      // Move pointer to the QR code and verification block on the PDF
+      tl.to("#s6-ptr", { x: 230, y: 585, duration: 1.4, ease: "power2.inOut" }, 7.6);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-06"] = tl;
+    })();
+  </script>
+</template>

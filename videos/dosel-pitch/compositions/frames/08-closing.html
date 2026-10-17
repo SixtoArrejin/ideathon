@@ -1,0 +1,159 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s8-stage {
+      position: absolute;
+      top: 52px;
+      left: 72px;
+      right: 72px;
+      height: 876px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s8-hero-card {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-radius: 28px;
+      height: 710px;
+      padding: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 32px;
+      box-shadow: 0 24px 60px rgba(20, 32, 26, 0.16);
+    }
+
+    .s8-brand {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background-color: #1d3326;
+      border: 2px solid #c8f25c;
+      padding: 18px 38px;
+      border-radius: 20px;
+    }
+
+    .s8-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+    }
+
+    .s8-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 58px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #eef3e4;
+    }
+
+    .s8-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 74px;
+      font-weight: 900;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      max-width: 1380px;
+      margin: 0;
+    }
+
+    .s8-lime {
+      color: #c8f25c;
+    }
+
+    .s8-url {
+      background-color: #c8f25c;
+      color: #14201a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 28px;
+      font-weight: 700;
+      padding: 20px 48px;
+      border-radius: 16px;
+    }
+
+    .s8-contracts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    .s8-c-pill {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-radius: 16px;
+      padding: 20px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .s8-c-lbl {
+      color: #4a5d52;
+    }
+
+    .s8-c-id {
+      color: #1d5c3e;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-08" data-width="1920" data-height="1080" data-start="0" data-duration="10">
+    <div class="s8-stage">
+      <div id="s8-card" class="s8-hero-card">
+        <div id="s8-brand" class="s8-brand">
+          <img class="s8-logo" src="assets/logo-mark.svg" alt="Dosel" />
+          <span class="s8-name">DOSEL</span>
+        </div>
+
+        <h1 id="s8-title" class="s8-title">
+          Cada tonelada tiene <span class="s8-lime">un satélite detrás.</span>
+        </h1>
+
+        <div id="s8-url" class="s8-url">
+          https://ideathon-henna.vercel.app/
+        </div>
+      </div>
+
+      <div id="s8-contracts" class="s8-contracts">
+        <div class="s8-c-pill">
+          <span class="s8-c-lbl">CONTRATO GREENTON (SOROBAN)</span>
+          <span class="s8-c-id">CD4WZAWP…K3KGJS25K7Q</span>
+        </div>
+        <div class="s8-c-pill">
+          <span class="s8-c-lbl">CONTRATO MERCADO ATÓMICO</span>
+          <span class="s8-c-id">CCVSHRV3…7VLVOJTYDD</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s8-card", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.6, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s8-brand", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.5)" }, 0.3);
+      tl.fromTo("#s8-title", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.55);
+      tl.fromTo("#s8-url", { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 1.0);
+      tl.fromTo("#s8-contracts", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-08"] = tl;
+    })();
+  </script>
+</template>

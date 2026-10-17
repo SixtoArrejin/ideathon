@@ -1,0 +1,269 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s3-stage {
+      position: absolute;
+      top: 48px;
+      left: 72px;
+      right: 72px;
+      height: 880px;
+      display: grid;
+      grid-template-columns: 1120px 620px;
+      gap: 36px;
+      align-items: stretch;
+    }
+
+    .s3-map-card {
+      position: relative;
+      background-color: #14201a;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(20, 32, 26, 0.14);
+    }
+
+    .s3-map-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .s3-top-pill {
+      position: absolute;
+      top: 24px;
+      left: 24px;
+      background-color: #14201a;
+      color: #c8f25c;
+      border: 2px solid #c8f25c;
+      border-radius: 12px;
+      padding: 12px 20px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .s3-bottom-hud {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      background-color: #14201a;
+      color: #eef3e4;
+      border-left: 8px solid #c8f25c;
+      border-radius: 16px;
+      padding: 22px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .s3-hud-lbl {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      color: #9db3a4;
+      letter-spacing: 0.08em;
+    }
+
+    .s3-hud-val {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 40px;
+      font-weight: 900;
+      color: #c8f25c;
+      margin-top: 4px;
+    }
+
+    .s3-pointer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 44px;
+      height: 44px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .s3-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s3-head-box {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-radius: 20px;
+      padding: 32px 36px;
+    }
+
+    .s3-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #c8f25c;
+      letter-spacing: 0.12em;
+      margin-bottom: 8px;
+    }
+
+    .s3-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 42px;
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin: 0;
+    }
+
+    .s3-parcel {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-left: 10px solid #1d5c3e;
+      border-radius: 20px;
+      padding: 32px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 12px 28px rgba(20, 32, 26, 0.06);
+    }
+
+    .s3-p-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .s3-p-code {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1d5c3e;
+    }
+
+    .s3-p-badge {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      background-color: #c8f25c;
+      color: #14201a;
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+
+    .s3-p-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      color: #14201a;
+    }
+
+    .s3-p-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-top: 2px solid #e6ece2;
+      padding-top: 14px;
+    }
+
+    .s3-p-ndvi {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1d5c3e;
+    }
+
+    .s3-p-gton {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 36px;
+      font-weight: 900;
+      color: #14201a;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-03" data-width="1920" data-height="1080" data-start="0" data-duration="16">
+    <div class="s3-stage">
+      <div id="s3-map" class="s3-map-card">
+        <img class="s3-map-img" src="assets/sat-impen.png" alt="Polígono Sentinel-2 Impenetrable" />
+
+        <div class="s3-top-pill">SENTINEL-2 L2A · S2B_MSIL2A_20260309 · 0% NUBES</div>
+
+        <div id="s3-hud" class="s3-bottom-hud">
+          <div>
+            <div class="s3-hud-lbl">LÍNEA BASE 2019</div>
+            <div class="s3-hud-val">0,768</div>
+          </div>
+          <div>
+            <div class="s3-hud-lbl">LECTURA 2026</div>
+            <div class="s3-hud-val">0,769 (+0,001)</div>
+          </div>
+          <div>
+            <div class="s3-hud-lbl">ACUÑADO ON-CHAIN</div>
+            <div class="s3-hud-val">56.261 GTON</div>
+          </div>
+        </div>
+
+        <svg id="s3-ptr" class="s3-pointer" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8" r="7" fill="rgba(200, 242, 92, 0.45)" />
+          <path d="M4 4 L16 34 L21 22 L33 17 Z" fill="#14201a" stroke="#c8f25c" stroke-width="3" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <div class="s3-right">
+        <div id="s3-h" class="s3-head-box">
+          <div class="s3-kicker">03 · PREDIOS ACTIVOS EN VIVO</div>
+          <h2 class="s3-title">Polígonos abiertos y auditables</h2>
+        </div>
+
+        <div id="s3-p1" class="s3-parcel">
+          <div class="s3-p-row">
+            <span class="s3-p-code">IMPEN1 · 1.380 ha</span>
+            <span class="s3-p-badge">ACTIVO · EMITE</span>
+          </div>
+          <div class="s3-p-name">El Impenetrable (Chaco)</div>
+          <div class="s3-p-stats">
+            <span class="s3-p-ndvi">NDVI 0,768 → 0,769</span>
+            <span class="s3-p-gton">28.181 GTON</span>
+          </div>
+        </div>
+
+        <div id="s3-p2" class="s3-parcel">
+          <div class="s3-p-row">
+            <span class="s3-p-code">CHACO1 · 1.370 ha</span>
+            <span class="s3-p-badge">ACTIVO · EMITE</span>
+          </div>
+          <div class="s3-p-name">Parque Nacional Chaco</div>
+          <div class="s3-p-stats">
+            <span class="s3-p-ndvi">NDVI 0,771 → 0,773</span>
+            <span class="s3-p-gton">28.080 GTON</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s3-map", { opacity: 0, x: -28 }, { opacity: 1, x: 0, duration: 0.65, ease: "power3.out" }, 0.15);
+      tl.fromTo("#s3-hud", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, 0.7);
+      tl.fromTo("#s3-h", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 0.3);
+      tl.fromTo("#s3-p1", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 1.4);
+      tl.fromTo("#s3-p2", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.55, ease: "power2.out" }, 3.2);
+
+      // Move pointer directly onto the green Sentinel-2 polygon center (x=660, y=420)
+      tl.fromTo("#s3-ptr", { x: 260, y: 200, scale: 1 }, { x: 650, y: 410, scale: 1, duration: 1.8, ease: "power2.inOut" }, 1.0);
+      tl.to("#s3-ptr", { scale: 0.8, duration: 0.15, yoyo: true, repeat: 1 }, 2.9);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-03"] = tl;
+    })();
+  </script>
+</template>

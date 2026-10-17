@@ -1,0 +1,212 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s4-stage {
+      position: absolute;
+      top: 48px;
+      left: 64px;
+      right: 64px;
+      height: 880px;
+      display: grid;
+      grid-template-columns: 1248px 504px;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .s4-app-frame {
+      position: relative;
+      width: 1248px;
+      height: 780px;
+      background-color: #ffffff;
+      border: 3px solid #14201a;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 48px rgba(20, 32, 26, 0.14);
+    }
+
+    .s4-shot-clip {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .s4-shot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+    }
+
+    .s4-pointer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 48px;
+      height: 48px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .s4-right {
+      height: 780px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s4-freeze-card {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-left: 10px solid #ff5a36;
+      border-radius: 20px;
+      padding: 36px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .s4-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ff5a36;
+      letter-spacing: 0.1em;
+    }
+
+    .s4-big-drop {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 64px;
+      font-weight: 900;
+      color: #ff5a36;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .s4-sub-drop {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      font-weight: 800;
+      color: #eef3e4;
+      line-height: 1.2;
+    }
+
+    .s4-zero-pill {
+      margin-top: 6px;
+      background-color: #ff5a36;
+      color: #14201a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+
+    .s4-dual-card {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-left: 10px solid #1d5c3e;
+      border-radius: 20px;
+      padding: 36px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 12px 28px rgba(20, 32, 26, 0.06);
+    }
+
+    .s4-kicker-green {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1d5c3e;
+      letter-spacing: 0.1em;
+    }
+
+    .s4-dual-num {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: #14201a;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .s4-dual-txt {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #4a5d52;
+      line-height: 1.3;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-04" data-width="1920" data-height="1080" data-start="0" data-duration="18">
+    <div class="s4-stage">
+      <!-- Exact 16:10 (1248x780) uncropped app view so cursor coordinates match 2560x1600 1:1 -->
+      <div id="s4-frame" class="s4-app-frame">
+        <div id="s4-shot-1" class="clip s4-shot-clip" data-start="0" data-duration="8.5" data-track-index="0">
+          <img class="s4-shot-img" src="assets/app-predios.png" alt="TACOP1 Congelado en Predios" />
+        </div>
+
+        <div id="s4-shot-2" class="clip s4-shot-clip" data-start="8.5" data-duration="9.5" data-track-index="0">
+          <img class="s4-shot-img" src="assets/app-cobertura.png" alt="TACOP1 Cobertura del suelo 10m" />
+        </div>
+
+        <svg id="s4-ptr" class="s4-pointer" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="6" fill="rgba(255, 90, 54, 0.45)" />
+          <path d="M4 4 L17 36 L23 23 L36 17 Z" fill="#14201a" stroke="#ff5a36" stroke-width="3" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <div class="s4-right">
+        <div id="s4-c1" class="s4-freeze-card">
+          <span class="s4-kicker">04 · TACOP1 (996 HA) · SOROBAN</span>
+          <span class="s4-big-drop">-0,202 NDVI</span>
+          <span class="s4-sub-drop">Cayó de 0,814 a 0,612 y el contrato lo congeló solo.</span>
+          <span class="s4-zero-pill">CONGELADO: EMITE 0 GTON</span>
+        </div>
+
+        <div id="s4-c2" class="s4-dual-card">
+          <span class="s4-kicker-green">CRUCE DE COBERTURA A 10 METROS</span>
+          <span class="s4-dual-num">83% Cultivos</span>
+          <span class="s4-dual-txt">Impact Observatory detecta estacionalidad agrícola y filtra falsos positivos.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s4-frame", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s4-c1", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+      tl.fromTo("#s4-c2", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 8.6);
+
+      // Exact pixel targets on 1248x780 (2560x1600 scaled by 0.4875):
+      // 1) TACOP1 card center: (963, 318)
+      // 2) NDVI 0,612 red dot on gauge: (920, 549)
+      // 3) Tab "Cobertura del suelo": (787, 465) -> click at 8.3s before shot-2 opens at 8.5s
+      // 4) 83% cultivos bar in Cobertura: (848, 546)
+      tl.fromTo("#s4-ptr", { x: 420, y: 220, scale: 1 }, { x: 963, y: 318, scale: 1, duration: 1.2, ease: "power2.inOut" }, 0.4);
+      tl.to("#s4-ptr", { scale: 0.78, duration: 0.14, yoyo: true, repeat: 1 }, 1.7);
+      tl.to("#s4-ptr", { x: 920, y: 549, duration: 1.4, ease: "power2.inOut" }, 2.6);
+      tl.to("#s4-ptr", { x: 787, y: 465, duration: 1.2, ease: "power2.inOut" }, 6.8);
+      tl.to("#s4-ptr", { scale: 0.78, duration: 0.14, yoyo: true, repeat: 1 }, 8.2);
+      tl.to("#s4-ptr", { x: 848, y: 546, duration: 1.2, ease: "power2.inOut" }, 9.2);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-04"] = tl;
+    })();
+  </script>
+</template>

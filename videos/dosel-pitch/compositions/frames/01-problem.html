@@ -1,0 +1,297 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s1-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(20, 32, 26, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 32, 26, 0.05) 1px, transparent 1px);
+      background-size: 96px 96px;
+      pointer-events: none;
+    }
+
+    .s1-stage {
+      position: absolute;
+      top: 52px;
+      left: 72px;
+      right: 72px;
+      height: 876px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s1-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .s1-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #1d5c3e;
+      margin-bottom: 12px;
+    }
+
+    .s1-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 64px;
+      font-weight: 900;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      color: #14201a;
+      max-width: 1260px;
+      margin: 0;
+    }
+
+    .s1-hl {
+      background-color: #c8f25c;
+      color: #14201a;
+      padding: 0 14px;
+      border-radius: 12px;
+    }
+
+    .s1-sat-pill {
+      background-color: #14201a;
+      color: #c8f25c;
+      border-radius: 14px;
+      padding: 16px 24px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .s1-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+
+    .s1-card {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-top: 8px solid #1d5c3e;
+      border-radius: 20px;
+      padding: 40px 38px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 12px 32px rgba(20, 32, 26, 0.06);
+    }
+
+    .s1-card-dark {
+      background-color: #14201a;
+      color: #eef3e4;
+      border: 2px solid #14201a;
+      border-top: 8px solid #c8f25c;
+      border-radius: 20px;
+      padding: 40px 38px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 16px 36px rgba(20, 32, 26, 0.14);
+    }
+
+    .s1-year {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #4a5d52;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .s1-year-dark {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #c8f25c;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .s1-num {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 78px;
+      font-weight: 900;
+      color: #14201a;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .s1-num-dark {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 78px;
+      font-weight: 900;
+      color: #c8f25c;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .s1-lbl {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #4a5d52;
+      line-height: 1.2;
+    }
+
+    .s1-lbl-dark {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #eef3e4;
+      line-height: 1.2;
+    }
+
+    .s1-contrast-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+
+    .s1-box-bad {
+      background-color: #e6ebe0;
+      border: 2px solid #c5d0c0;
+      border-left: 10px solid #4a5d52;
+      border-radius: 18px;
+      padding: 28px 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .s1-box-good {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-left: 10px solid #c8f25c;
+      border-radius: 18px;
+      padding: 28px 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .s1-b-tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .s1-b-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .s1-b-pill-bad {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      background-color: #14201a;
+      color: #eef3e4;
+      padding: 10px 18px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .s1-b-pill-good {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      background-color: #c8f25c;
+      color: #14201a;
+      padding: 10px 18px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-01" data-width="1920" data-height="1080" data-start="0" data-duration="14">
+    <div class="s1-grid"></div>
+
+    <div class="s1-stage">
+      <div id="s1-head" class="s1-header">
+        <div>
+          <div class="s1-kicker">01 · EL PROBLEMA · GRAN CHACO ARGENTINO</div>
+          <h1 class="s1-title">
+            Más de <span class="s1-hl">210.000 hectáreas</span> perdidas en un año.
+          </h1>
+        </div>
+        <div class="s1-sat-pill">DATOS REALES · 2024 – 2025</div>
+      </div>
+
+      <div class="s1-stats">
+        <div id="s1-c1" class="s1-card">
+          <span class="s1-year">DESMONTE 2024</span>
+          <span class="s1-num">119.886 ha</span>
+          <span class="s1-lbl">Chaco, Sgo. del Estero, Formosa y Salta</span>
+        </div>
+
+        <div id="s1-c2" class="s1-card-dark">
+          <span class="s1-year-dark">DESMONTE + INCENDIOS 2025</span>
+          <span class="s1-num-dark">210.702 ha</span>
+          <span class="s1-lbl-dark">Bosque nativo perdido en 12 meses</span>
+        </div>
+
+        <div id="s1-c3" class="s1-card">
+          <span class="s1-year">ACUMULADO 1998 – 2024</span>
+          <span class="s1-num">+7,0 M ha</span>
+          <span class="s1-lbl">75% concentrado en 4 provincias del norte</span>
+        </div>
+      </div>
+
+      <div class="s1-contrast-bar">
+        <div id="s1-bad" class="s1-box-bad">
+          <div>
+            <div class="s1-b-tag" style="color: #4a5d52;">MERCADO TRADICIONAL</div>
+            <div class="s1-b-title" style="color: #14201a;">Auditorías aisladas sin seguimiento real</div>
+          </div>
+          <span class="s1-b-pill-bad">SIN TRAZABILIDAD</span>
+        </div>
+
+        <div id="s1-good" class="s1-box-good">
+          <div>
+            <div class="s1-b-tag" style="color: #c8f25c;">EL CAMBIO CON DOSEL</div>
+            <div class="s1-b-title" style="color: #eef3e4;">Satélite continuo + Blockchain Stellar</div>
+          </div>
+          <span class="s1-b-pill-good">VERIFICABLE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s1-head", { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s1-c1", { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.5);
+      tl.fromTo("#s1-c2", { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.9);
+      tl.fromTo("#s1-c3", { opacity: 0, y: 32 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.3);
+      tl.fromTo("#s1-bad", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, 3.8);
+      tl.fromTo("#s1-good", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power2.out" }, 5.2);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-01"] = tl;
+    })();
+  </script>
+</template>

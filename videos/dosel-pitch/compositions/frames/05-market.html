@@ -1,0 +1,209 @@
+<template>
+  <style>
+    #root {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background-color: #f2f4ec;
+      color: #14201a;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .s5-stage {
+      position: absolute;
+      top: 48px;
+      left: 64px;
+      right: 64px;
+      height: 880px;
+      display: grid;
+      grid-template-columns: 1248px 504px;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .s5-app-frame {
+      position: relative;
+      width: 1248px;
+      height: 780px;
+      background-color: #ffffff;
+      border: 3px solid #14201a;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 48px rgba(20, 32, 26, 0.14);
+    }
+
+    .s5-shot-clip {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .s5-shot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+    }
+
+    .s5-pointer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 48px;
+      height: 48px;
+      pointer-events: none;
+      z-index: 15;
+    }
+
+    .s5-right {
+      height: 780px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .s5-card-dark {
+      background-color: #14201a;
+      color: #eef3e4;
+      border-left: 10px solid #c8f25c;
+      border-radius: 20px;
+      padding: 36px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .s5-kicker {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #c8f25c;
+      letter-spacing: 0.1em;
+    }
+
+    .s5-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 46px;
+      font-weight: 900;
+      color: #eef3e4;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+    }
+
+    .s5-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 18px;
+      color: #c8f25c;
+      margin-top: 4px;
+    }
+
+    .s5-card-light {
+      background-color: #ffffff;
+      border: 2px solid #d4ddd0;
+      border-left: 10px solid #1d5c3e;
+      border-radius: 20px;
+      padding: 36px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 12px 28px rgba(20, 32, 26, 0.06);
+    }
+
+    .s5-kicker-g {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1d5c3e;
+      letter-spacing: 0.1em;
+    }
+
+    .s5-num {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 62px;
+      font-weight: 900;
+      color: #1d5c3e;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .s5-desc {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: #14201a;
+      line-height: 1.25;
+    }
+
+    .s5-burn-pill {
+      margin-top: 6px;
+      background-color: #c8f25c;
+      color: #14201a;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 10px 16px;
+      border-radius: 10px;
+      width: fit-content;
+    }
+  </style>
+
+  <div id="root" data-composition-id="scene-05" data-width="1920" data-height="1080" data-start="0" data-duration="18">
+    <div class="s5-stage">
+      <!-- Exact 16:10 (1248x780) uncropped app view -->
+      <div id="s5-frame" class="s5-app-frame">
+        <div id="s5-layer-1" class="clip s5-shot-clip" data-start="0" data-duration="6.8" data-track-index="0">
+          <img class="s5-shot-img" src="assets/app-mercado.png" alt="Mercado de Dosel" />
+        </div>
+
+        <div id="s5-layer-2" class="clip s5-shot-clip" data-start="6.8" data-duration="11.2" data-track-index="0">
+          <img class="s5-shot-img" src="assets/app-modal.png" alt="Modal Confirmar compra y quema" />
+        </div>
+
+        <svg id="s5-ptr" class="s5-pointer" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6" cy="6" r="6" fill="rgba(200, 242, 92, 0.55)" />
+          <path d="M4 4 L17 36 L23 23 L36 17 Z" fill="#14201a" stroke="#c8f25c" stroke-width="3" stroke-linejoin="round" />
+        </svg>
+      </div>
+
+      <div class="s5-right">
+        <div id="s5-c1" class="s5-card-dark">
+          <span class="s5-kicker">05 · MERCADO SOROBAN · IMPACTO AMBIENTAL</span>
+          <span class="s5-title">Comprar es compensar</span>
+          <span class="s5-sub">La empresa compensa su CO₂ financiando al dueño del campo.</span>
+        </div>
+
+        <div id="s5-c2" class="s5-card-light">
+          <span class="s5-kicker-g">FINANCIAMIENTO DIRECTO AL PRODUCTOR</span>
+          <span class="s5-num">500 tCO₂e</span>
+          <span class="s5-desc">50 XLM directo al dueño del bosque y huella compensada a nombre de Empresa Demo SA.</span>
+          <span class="s5-burn-pill">PAGO + QUEMA EN 1 TRANSACCIÓN</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const tl = gsap.timeline();
+      tl.fromTo("#s5-frame", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.1);
+      tl.fromTo("#s5-c1", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.4);
+      tl.fromTo("#s5-c2", { opacity: 0, x: 28 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 7.0);
+
+      // Exact pixel coordinates on 1248x780 (2560x1600 scaled by 0.4875):
+      // 1) Left "Comprar y quemar" button center: (282, 456) -> click at 6.3s before modal opens at 6.8s
+      // 2) Modal row "500 t del lote IMPEN1 · 2026-03": (661, 413)
+      // 3) Modal button "Firmar con Freighter" center: (748, 531) -> click at 11.4s
+      tl.fromTo("#s5-ptr", { x: 600, y: 240, scale: 1 }, { x: 282, y: 456, scale: 1, duration: 1.4, ease: "power2.inOut" }, 1.2);
+      tl.to("#s5-ptr", { scale: 0.78, duration: 0.15, yoyo: true, repeat: 1 }, 6.3);
+      tl.to("#s5-ptr", { x: 661, y: 413, duration: 1.1, ease: "power2.inOut" }, 7.4);
+      tl.to("#s5-ptr", { x: 748, y: 531, duration: 1.2, ease: "power2.inOut" }, 9.8);
+      tl.to("#s5-ptr", { scale: 0.78, duration: 0.15, yoyo: true, repeat: 1 }, 11.4);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["scene-05"] = tl;
+    })();
+  </script>
+</template>
