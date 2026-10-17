@@ -70,6 +70,7 @@ export default function Transparency() {
                     <a href={hrefFor("predios", r.parcel)}>{lotLabel(r.parcel, r.period)}</a>
                     {" · "}{r.holder === MARKET_ID ? "vía mercado" : short(r.holder, 4)}
                     {" · "}{new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}
+                    {" · "}<a href={hrefFor("certificado", String(r.id))}>Certificado</a>
                   </span>
                 </li>
               ))}
@@ -79,10 +80,10 @@ export default function Transparency() {
           <section id="reglas">
             <h2>Reglas del contrato</h2>
             <ol className="rules-list">
-              <li><b>Solo emite el oráculo.</b> El propietario registra el predio con su polígono, pero no puede acuñar.</li>
+              <li><b>Solo emite el oráculo.</b> El auditor registra el predio a nombre de su dueño, después de revisar título y polígono. Ni el dueño ni nadie más puede acuñar.</li>
               <li><b>Un período, un lote.</b> Cada verificación crea un lote propio del predio y del período, y no se puede repetir.</li>
               <li><b>La vegetación tiene que sostenerse.</b> Si el NDVI baja de 0,40 o cae más de 0,15 desde la línea base, el predio se congela y no emite. Solo el auditor lo levanta.</li>
-              <li><b>Comprar es compensar.</b> El mercado cobra, paga al vendedor y quema las toneladas del lote en la misma transacción.</li>
+              <li><b>Comprar es compensar.</b> El mercado cobra, paga al vendedor (y la comisión de la plataforma, si la hay) y quema las toneladas del lote en la misma transacción.</li>
               <li><b>Retirar es irreversible.</b> Quemar descuenta del suministro y guarda quién compensó y de qué lote.</li>
             </ol>
           </section>

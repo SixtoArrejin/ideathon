@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { PARCEL_IDS } from "./config";
 
-export type Page = "inicio" | "predios" | "mercado" | "radar" | "cuenta" | "transparencia";
+export type Page = "inicio" | "predios" | "mercado" | "radar" | "cuenta" | "transparencia" | "certificado";
 export const PAGES: { id: Page; label: string }[] = [
   { id: "inicio", label: "Inicio" },
   { id: "predios", label: "Predios" },
@@ -9,10 +9,11 @@ export const PAGES: { id: Page; label: string }[] = [
   { id: "radar", label: "Radar" },
   { id: "cuenta", label: "Mi cuenta" },
   { id: "transparencia", label: "Transparencia" },
+  { id: "certificado", label: "Certificado" },
 ];
 
-/** Enlaces de la barra: Mi cuenta vive en el menú de la billetera. */
-export const NAV_PAGES = PAGES.filter((p) => p.id !== "cuenta");
+/** Enlaces de la barra: Mi cuenta vive en el menú de la billetera y el certificado se abre desde un retiro. */
+export const NAV_PAGES = PAGES.filter((p) => p.id !== "cuenta" && p.id !== "certificado");
 
 export type Route = { page: Page; param?: string };
 

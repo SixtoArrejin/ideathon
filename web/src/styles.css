@@ -366,3 +366,32 @@ input, select { font: 400 1rem var(--body); padding: 9px 10px; border: 1px solid
 .ledger .line { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
 .ledger .line > div { display: grid; gap: 2px; min-width: 0; }
 .empty .btn { justify-self: start; margin-top: 4px; }
+
+/* Certificado de compensación */
+.cert-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.cert-actions .row { display: flex; gap: 8px; flex-wrap: wrap; }
+.cert { max-width: 820px; margin-inline: auto; padding: clamp(20px, 4vw, 44px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); display: grid; gap: 28px; }
+.cert header { display: grid; gap: 10px; }
+.cert h1 { margin: 0; overflow-wrap: anywhere; }
+.cert-grid { margin: 0; display: grid; gap: 0; }
+.cert-grid > div { display: grid; grid-template-columns: minmax(140px, 220px) minmax(0, 1fr); gap: 16px; padding: 10px 0; border-top: 1px solid var(--line); }
+.cert-grid dt { color: var(--muted); font-size: 0.85rem; }
+.cert-grid dd { margin: 0; overflow-wrap: anywhere; }
+.cert-verify { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 20px; align-items: start; padding-top: 20px; border-top: 1px solid var(--line); }
+.cert-verify h2 { margin: 0 0 6px; font-size: 1.05rem; }
+.cert-verify p { margin: 4px 0; }
+.qr { width: 148px; height: 148px; border: 1px solid var(--line); border-radius: 4px; }
+@media (max-width: 560px) {
+  .cert-grid > div { grid-template-columns: 1fr; gap: 2px; }
+  .cert-verify { grid-template-columns: 1fr; }
+}
+@media print {
+  :root, :root[data-theme="light"], :root[data-theme="dark"] { --bg: #fff; --surface: #fff; --ink: #000; --muted: #444; --line: #bbb; --ok: #0f5132; }
+  .nav, .nav-spacer, .skip, .no-print, .foot, .errbar { display: none !important; }
+  html, body { background: #fff !important; color: #000; }
+  @page { margin: 0; }
+  .page-pad { padding: 14mm !important; }
+  .cert { border: 0; padding: 0; max-width: none; }
+  a { color: #000; text-decoration: none; }
+}
+.empty .copy { justify-self: start; }
