@@ -18,10 +18,10 @@ const go = (id: string) => document.getElementById(id)?.scrollIntoView({ behavio
 export default function Transparency() {
   const { rets, loaded } = useData();
   const contracts = [
-    { name: "GreenTon v2", note: "Lotes, emisión, congelamiento y retiro", id: CONTRACT_ID },
+    { name: "GreenTon", note: "Lotes, emisión, congelamiento y retiro", id: CONTRACT_ID },
     { name: "Mercado", note: "Ofertas y compra con quema atómica", id: MARKET_ID },
     { name: "Activo de pago (XLM)", note: "Contrato estándar del activo nativo de Stellar", id: PAYMENT_ASSET_ID },
-    { name: "GreenTon v1 (archivo)", note: "Primera entrega, sin lotes ni mercado", id: V1_CONTRACT_ID },
+    { name: "GreenTon (primera entrega)", note: "Archivo: sin lotes ni mercado", id: V1_CONTRACT_ID },
   ];
 
   return (

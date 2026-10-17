@@ -49,7 +49,7 @@ export default function App() {
     return (
       <main className="wrap page-pad">
         <h1>Falta configurar los contratos.</h1>
-        <p className="lead">Definí <code>VITE_GREENTON_ID</code> y <code>VITE_MARKET_ID</code> con los IDs de GreenTon v2 y del mercado en Testnet (ver DEPLOY.md) y volvé a compilar.</p>
+        <p className="lead">Definí <code>VITE_GREENTON_ID</code> y <code>VITE_MARKET_ID</code> con los IDs de GreenTon y del mercado en Testnet (ver DEPLOY.md) y volvé a compilar.</p>
       </main>
     );
   }

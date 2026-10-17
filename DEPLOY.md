@@ -88,3 +88,13 @@ cd oracle
    2. Con otra cuenta fondeada por Friendbot, en **Mercado**, comprar y quemar una parte.
    3. Comprobar que el XLM llegó al dueño, que el retiro figura con el lote IMPEN1 y que el suministro bajó.
 8. Actualizar el README con los IDs y los hashes nuevos.
+
+## 6. Probar el modelo de negocio sin tocar producción
+
+`main` incluye cambios que **no están desplegados** en los contratos oficiales: el registro de predios solo por el admin y la comisión de plataforma del mercado. Para probarlos en Testnet con contratos de prueba propios (alias `*-negocio`), sin tocar los IDs oficiales:
+
+```sh
+scripts/probar-modelo-negocio.sh        # 500 = 5 % de comisión; otro valor: scripts/probar-modelo-negocio.sh 300
+```
+
+Compila, despliega, y verifica con 12 chequeos que el propietario no puede registrar, que el admin sí, y que en una compra la comisión llega a la tesorería y el resto al vendedor. Al final imprime el comando para ver esos contratos en la web local (`VITE_GREENTON_ID` y `VITE_MARKET_ID`). Los datos son de prueba, no mediciones reales. Las pruebas de la lógica sin red están en `cargo test`.

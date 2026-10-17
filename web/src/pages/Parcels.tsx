@@ -5,6 +5,7 @@ import ParcelMap from "../components/ParcelMap";
 import { EXPERT, PARCEL_IDS } from "../config";
 import { useData } from "../data";
 import { fmt, ndvi, PARCEL_LABELS, period, short } from "../lib";
+import ProposeParcel from "../components/ProposeParcel";
 import { hrefFor } from "../router";
 
 const STAC_ITEM = (id: string) => `https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/${id}`;
@@ -18,6 +19,7 @@ const TABS: { id: Tab; label: string }[] = [
 export default function Parcels({ selected }: { selected: string }) {
   const { parcels, ver, cover } = useData();
   const [tab, setTab] = useState<Tab>("resumen");
+  const [propose, setPropose] = useState(false);
   const p = parcels[selected];
   const meta = PARCEL_LABELS[selected];
   const evidence = ver.filter((v) => v.parcel === selected);
@@ -27,8 +29,8 @@ export default function Parcels({ selected }: { selected: string }) {
     <div className="wrap page-pad">
       <header className="page-head">
         <p className="kicker">Predios</p>
-        <h1>Tres polígonos, una misma vara</h1>
-        <p className="lead">Cada predio se mide con el mismo método. Elegí uno para ver qué dijo el satélite y qué hizo el contrato.</p>
+        <h1>Predios verificados</h1>
+        <p className="lead">Cada predio se mide con el mismo método satelital y queda registrado en la red. Estos son los de la demostración; cualquiera puede proponer uno nuevo.</p>
       </header>
 
       <ul className="picker">
@@ -44,7 +46,15 @@ export default function Parcels({ selected }: { selected: string }) {
             </li>
           );
         })}
+        <li>
+          <button className="pick add" onClick={() => setPropose(true)}>
+            <span className="mono">+</span>
+            <b>Sumar un predio</b>
+            <em>Proponer</em>
+          </button>
+        </li>
       </ul>
+      <ProposeParcel open={propose} onClose={() => setPropose(false)} />
 
       <section className="explorer" aria-label="Detalle del predio">
         <div className="mapcol">

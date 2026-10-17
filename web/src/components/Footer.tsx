@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="foot-brand">
           <a className="brand" href={hrefFor("inicio")} aria-label="Dosel, inicio"><Logo size={36} /><span>Dosel</span></a>
           <p className="foot-tag">El bosque, verificado desde arriba.</p>
-          <p className="muted small">Créditos de carbono de bosque nativo del Gran Chaco, medidos con satélite y emitidos y retirados en Stellar.</p>
+          <p className="muted small">Créditos de carbono de bosque nativo, medidos con satélite y emitidos y retirados en Stellar.</p>
         </div>
         <div className="foot-col">
           <h3>Explorar</h3>

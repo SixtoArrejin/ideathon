@@ -119,7 +119,7 @@ p { margin: 0; }
 .candid::before { content: ""; height: 1px; background: var(--line); margin-bottom: clamp(20px, 3vw, 36px); }
 
 /* Predios */
-.picker { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.picker { list-style: none; margin: 0 0 20px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
 .pick { display: grid; gap: 2px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); text-decoration: none; color: var(--ink); transition: border-color 0.15s; }
 .pick:hover { border-color: var(--ok); }
 .pick .mono { color: var(--muted); } .pick b { font-weight: 600; }
@@ -395,3 +395,7 @@ input, select { font: 400 1rem var(--body); padding: 9px 10px; border: 1px solid
   a { color: #000; text-decoration: none; }
 }
 .empty .copy { justify-self: start; }
+
+.pick.add { width: 100%; text-align: left; cursor: pointer; font: inherit; color: var(--ink); background: transparent; border-style: dashed; }
+.pick.add:hover { border-color: var(--accent); }
+.pick.add em { color: var(--ok); }

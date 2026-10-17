@@ -23,9 +23,9 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 
 ## Datos on-chain (Testnet)
 
-> **Código de lo desplegado:** el fuente exacto de los dos contratos de abajo es el del tag [`testnet-v2-desplegado`](https://github.com/SixtoArrejin/ideathon/tree/testnet-v2-desplegado). `main` suma cambios posteriores (registro de predios solo por el admin y comisión de plataforma) que **todavía no están desplegados**.
+> **Código de lo desplegado:** el fuente exacto de los dos contratos de abajo es el del tag [`contratos-desplegados-testnet`](https://github.com/SixtoArrejin/ideathon/tree/contratos-desplegados-testnet). `main` suma cambios posteriores (registro de predios solo por el admin y comisión de plataforma) que **todavía no están desplegados**.
 
-- **GreenTon v2:** [`CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q`](https://stellar.expert/explorer/testnet/contract/CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q) · deploy [fc7cc8e0…](https://stellar.expert/explorer/testnet/tx/fc7cc8e023414ae301d0b290985e219447f08272af97b1d48fa77191e2d0352c)
+- **GreenTon:** [`CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q`](https://stellar.expert/explorer/testnet/contract/CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q) · deploy [fc7cc8e0…](https://stellar.expert/explorer/testnet/tx/fc7cc8e023414ae301d0b290985e219447f08272af97b1d48fa77191e2d0352c)
 - **Mercado:** [`CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD`](https://stellar.expert/explorer/testnet/contract/CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD) · deploy [00d7de79…](https://stellar.expert/explorer/testnet/tx/00d7de791c0a8a821aad800cb02d28155c393629243d88b51a68f8efca01dbbb)
 - **Activo de pago:** XLM nativo vía su SAC `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
 - **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD` · comprador de la demo `GAUJHWH757JYECRFIDJYU4UEPZCTJ7JHR2BZFSR3DEUSCMEFW7E5RXIT`
@@ -45,7 +45,7 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 
 Estado tras estas transacciones: 61.239 GTON en circulación y 500 retiradas.
 
-**Versión 1 (archivo).** El contrato de la primera entrega, sin lotes ni mercado, sigue en la red: [`CCNQ7X37…SXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG). Su evidencia satelital está en `web/public/verifications.v1.json`.
+**Primera entrega (archivo).** El contrato de la primera entrega, sin lotes ni mercado, sigue en la red: [`CCNQ7X37…SXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG). Su evidencia satelital está en `web/public/verifications.v1.json`.
 
 ## Arquitectura
 
@@ -53,7 +53,7 @@ Estado tras estas transacciones: 61.239 GTON en circulación y 500 retiradas.
 Sentinel-2 L2A (Planetary Computer, STAC)
         │  NDVI medio del bbox (oracle/ndvi.py)
         ▼
-Oráculo (Python) ──firma──► GreenTon v2 ◄──firma── Freighter (propietario)
+Oráculo (Python) ──firma──► GreenTon ◄──firma── Freighter (propietario)
                               • register_parcel (solo admin)     • submit_verification (solo oráculo)
                               • transfer / retire por lote   • unfreeze (solo admin/auditor)
                                      ▲
@@ -121,5 +121,5 @@ Para publicar, comprar o retirar desde la web, usar Freighter en **Testnet**. Pa
 - **El NDVI solo puede no detectar una tala**: una conversión de monte a cultivo medida en estación húmeda tiene NDVI alto. Documentamos cuatro bloques donde la cobertura muestra pérdida de bosque y el NDVI no cae (`docs/validacion.md`, sección 3b). La segunda señal todavía no está en el contrato.
 - **Sin entrevistas a usuarios.** La validación es documental y técnica: ver [`docs/validacion.md`](docs/validacion.md).
 - **Congelar no bloquea lotes viejos**: las toneladas emitidas antes de la caída se pueden seguir ofertando. La web lo advierte en la oferta.
-- GreenTon v2 no implementa la interfaz estándar de token (SEP-41): las billeteras genéricas no muestran los saldos por lote.
+- GreenTon no implementa la interfaz estándar de token (SEP-41): las billeteras genéricas no muestran los saldos por lote.
 - Testnet únicamente.
