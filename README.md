@@ -23,6 +23,8 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 
 ## Datos on-chain (Testnet)
 
+> **Código de lo desplegado:** el fuente exacto de los dos contratos de abajo es el del tag [`testnet-v2-desplegado`](https://github.com/SixtoArrejin/ideathon/tree/testnet-v2-desplegado). `main` suma cambios posteriores (registro de predios solo por el admin y comisión de plataforma) que **todavía no están desplegados**.
+
 - **GreenTon v2:** [`CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q`](https://stellar.expert/explorer/testnet/contract/CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q) · deploy [fc7cc8e0…](https://stellar.expert/explorer/testnet/tx/fc7cc8e023414ae301d0b290985e219447f08272af97b1d48fa77191e2d0352c)
 - **Mercado:** [`CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD`](https://stellar.expert/explorer/testnet/contract/CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD) · deploy [00d7de79…](https://stellar.expert/explorer/testnet/tx/00d7de791c0a8a821aad800cb02d28155c393629243d88b51a68f8efca01dbbb)
 - **Activo de pago:** XLM nativo vía su SAC `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
