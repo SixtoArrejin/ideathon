@@ -4,7 +4,7 @@
 
 ## Contexto
 
-La especificación del modelo de negocio ([`docs/specs/modelo-de-negocio.md`](../specs/modelo-de-negocio.md)) propone tres cobros: una comisión de plataforma en el mercado, un cargo de alta sobre el primer lote y un fondo de reserva del 10 % retenido en cada emisión. El análisis de esa spec estima que, apilados, le quitarían al propietario cerca del 23 % del primer lote. Es una cifra del análisis de la rama de negocio, no verificada de forma independiente, y la spec original no lo decía en ningún lado.
+La especificación del modelo de negocio ([`docs/specs/modelo-de-negocio.md`](../specs/modelo-de-negocio.md)) propone tres cobros: una comisión de plataforma en el mercado, un cargo de alta sobre el primer lote y un fondo de reserva del 10 % retenido en cada emisión. Con los rangos que propone la spec (comisión de 5 a 8 %, alta de 3 a 5 %, reserva de 10 %), apilados le quitarían al propietario entre 18 % y 23 % del primer lote, y la spec original no lo decía en ningún lado.
 
 Al mismo tiempo, los contratos oficiales ya estaban desplegados en Testnet y sus IDs y hashes figuran en la entrega de la hackathon. Los contratos no implementan `update_current_contract_wasm`, así que cualquier cambio de lógica exige un despliegue nuevo, con IDs nuevos.
 
