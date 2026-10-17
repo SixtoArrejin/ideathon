@@ -3,7 +3,7 @@
 **Versión:** 1.0.0  
 **Fecha:** Octubre 2026  
 **Estado:** Propuesta de definición para cierre de producto  
-**Documentos relacionados:** [`GLOSSARY.md`](../../GLOSSARY.md) · [ADR 0001](../adr/0001-lotes-y-compra-retiro-atomico.md) · [`docs/spec-sistema-completo.md`](../spec-sistema-completo.md) · [`docs/validacion.md`](../validacion.md)
+**Documentos relacionados:** [`GLOSSARY.md`](../../GLOSSARY.md) · [ADR 0001](../adr/0001-lotes-y-compra-retiro-atomico.md) · [ADR 0002](../adr/0002-alcance-del-modelo-de-negocio.md) · [`docs/spec-sistema-completo.md`](../spec-sistema-completo.md) · [`docs/validacion.md`](../validacion.md)
 
 ---
 
@@ -184,17 +184,17 @@ Implementado y probado en local (`cargo test`: 13 + 14 tests, `stellar contract 
 | Punto del spec | Estado | Dónde |
 |---|---|---|
 | Alta solo por el verificador (Decisión 1A) | Hecho | `register_parcel` exige `admin.require_auth()`; `oracle/run.py register` firma como `admin` |
-| Comisión de plataforma atómica (§5.1) | Hecho | El constructor del mercado recibe `treasury` y `fee_bps` (tope 10 %, `MAX_FEE_BPS`); `buy_and_retire` paga `total - fee` al vendedor y `fee` a la tesorería; `Purchase` y el evento guardan `fee`. La comisión se redondea hacia abajo, a favor del vendedor |
-| Certificado digital verificable, Nivel 2 (Decisión 3) | Hecho | Vista `/#/certificado/<retirement_id>` (`web/src/pages/Certificate.tsx`), con enlace desde Transparencia, QR al contrato en Stellar Expert y estilos de impresión a PDF |
+| Comisión de plataforma atómica (§5.1) | Hecho | El constructor del mercado recibe `treasury` y `fee_bps` (tope 10 %, `MAX_FEE_BPS`); `buy_and_retire` paga `total - fee` al vendedor y `fee` a la tesorería; `Purchase` y el evento guardan `fee`. La comisión se redondea hacia abajo, a favor del vendedor, y la web desglosa neto y comisión antes de firmar cuando `fee_bps > 0` |
+| Certificado digital verificable, Nivel 2 (Decisión 3) | Hecho | Vista `/#/certificado/<retirement_id>` (`web/src/pages/Certificate.tsx`), con enlace desde Transparencia y Mi cuenta, hash de la transacción de retiro resuelto desde eventos RPC (`web/public/retirements.json` como respaldo), QR al contrato en Stellar Expert y estilos de impresión a PDF |
 | Compra con quema inmediata (Decisión 2A) | Sin cambios | Ya estaba implementada |
 
-**Qué implica desplegarlo:** GreenTon y el mercado cambian de ID (nuevo WASM y nuevo constructor), hay que volver a registrar y verificar los predios, y actualizar `web/src/config.ts` y el README (ver `DEPLOY.md`).
+**Qué implica desplegarlo:** GreenTon y el mercado cambian de ID (nuevo WASM y nuevo constructor), hay que volver a registrar y verificar los predios, y actualizar `web/src/config.ts` y el README (ver `DEPLOY.md` y [ADR 0002](../adr/0002-alcance-del-modelo-de-negocio.md)).
 
 ### Brechas que el spec todavía deja abiertas
 
-1. **Las tarifas se apilan y no se suman en ningún lado.** Comisión de mercado (5–8 %), cargo de alta (3–5 % del primer lote) y *buffer pool* (10 % de cada emisión) pueden quitarle al propietario cerca de un 23 % del primer lote. Falta una tabla con el neto que recibe el dueño en un ejemplo concreto y un tope global.
+1. **Las tarifas se apilan y no se suman en ningún lado.** Comisión de mercado (5–8 %), cargo de alta (3–5 % del primer lote) y *buffer pool* (10 % de cada emisión) pueden quitarle al propietario entre un 18 % y un 23 % del primer lote. Falta una tabla con el neto que recibe el dueño en un ejemplo concreto y un tope global.
 2. **El *buffer pool* (§5.3) no está implementado** y choca con la regla «1 GTON = 1 tCO₂e emitida al propietario»: hay que decidir si el 10 % retenido se emite a una cuenta de reserva y quién puede liberarlo.
 3. **El formulario privado con documentación (Supabase, §3 y Etapa 1) no existe todavía.** Hoy «Proponer un predio» sigue abriendo un issue público de GitHub con datos de contacto, lo cual es incompatible con subir título y KYC.
 4. **Falta decidir la tesorería:** cuenta única o multifirma, y que necesita trustline si cobra en USDC.
-5. **El certificado no puede mostrar el hash de la transacción de retiro**, porque el contrato no lo guarda (solo el de emisión, que viene de `verifications.json`). Para incluirlo hace falta un indexador de eventos o guardarlo fuera de la cadena.
+5. **Retención del hash de la transacción de retiro pasados 7 días:** el certificado obtiene el hash de quema consultando los eventos del RPC de Soroban (que se conservan ~7 días) y usa `web/public/retirements.json` como respaldo estático para los retiros oficiales; para conservar cualquier retiro histórico de forma automática hace falta un indexador de eventos.
 6. **Sin rotación de claves** de `admin`, `oracle` ni `treasury`: ahora el `admin` controla además el alta de predios, así que su compromiso pesa más que antes.
