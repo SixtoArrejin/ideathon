@@ -75,7 +75,7 @@ Reglas del mercado (`contracts/market/src/lib.rs`):
 - `buy_and_retire` paga al vendedor y quema las toneladas a nombre del beneficiario **en una sola transacción**. Si falla el pago, no se quema nada.
 - Solo el vendedor cancela, y recupera el remanente.
 
-Decisiones: [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md).
+Decisiones: [ADR 0001](docs/adr/0001-lotes-y-compra-retiro-atomico.md) (lotes y compra con quema atómica) y [ADR 0002](docs/adr/0002-alcance-del-modelo-de-negocio.md) (qué se demuestra del modelo de negocio y qué se frena, y por qué).
 
 ## Radar y propuesta de predios
 
