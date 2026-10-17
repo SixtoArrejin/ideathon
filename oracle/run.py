@@ -4,7 +4,7 @@ Cada verificación que emite crea un lote (predio, período) en GreenTon v2. La 
 log de evidencia se identifica por ese mismo par, así la web cruza escena y lote.
 
 Uso:
-  python run.py register               # registra los predios de parcels.json (firma el dueño)
+  python run.py register               # registra los predios de parcels.json (firma el admin, a nombre del dueño)
   python run.py verify <PREDIO> <periodo AAAAMM> <AAAA-MM-DD/AAAA-MM-DD>
 """
 import json
@@ -71,7 +71,7 @@ def append_log(entry):
 def cmd_register():
     for p in load_parcels().values():
         ha = hectares(p["bbox"])
-        out, tx = invoke("owner", "register_parcel", ("owner", addr("owner")),
+        out, tx = invoke("admin", "register_parcel", ("owner", addr("owner")),
                          ("parcel", p["id"]), ("hectares", ha),
                          ("bbox", ",".join(map(str, p["bbox"]))))
         print(f"registrado {p['id']} ({ha} ha) tx={tx}")
