@@ -1,13 +1,13 @@
 import qrcode from "qrcode-generator";
 import { useEffect, useState } from "react";
-import { getLot, getParcel, getPurchase, getRetirement, purchaseCount, type LotInfo, type Parcel, type Purchase, type Retirement } from "../chain";
+import { getLot, getParcel, getPurchase, getRetirement, purchaseCount, retirementTx, type LotInfo, type Parcel, type Purchase, type Retirement } from "../chain";
 import CopyButton from "../components/CopyButton";
 import { CONTRACT_ID, EXPERT, MARKET_ID, PAYMENT_ASSET_CODE } from "../config";
 import { useData } from "../data";
 import { fmt, fromUnits, lotLabel, ndvi, PARCEL_LABELS, short } from "../lib";
 import { hrefFor } from "../router";
 
-type Cert = { ret: Retirement; lot: LotInfo | null; parcel: Parcel | null; purchase: Purchase | null };
+type Cert = { ret: Retirement; lot: LotInfo | null; parcel: Parcel | null; purchase: Purchase | null; burnTx: string | null };
 type State = { status: "loading" } | { status: "missing" } | { status: "error"; msg: string } | { status: "ok"; cert: Cert };
 
 /** QR como SVG vectorial (se imprime nítido y no depende de un servicio externo). */
@@ -40,12 +40,13 @@ async function loadCert(id: number): Promise<State> {
   try {
     const ret = await getRetirement(id);
     if (!ret) return { status: "missing" };
-    const [lot, parcel, purchase] = await Promise.all([
+    const [lot, parcel, purchase, burnTx] = await Promise.all([
       getLot(ret.parcel, ret.period).catch(() => null),
       getParcel(ret.parcel).catch(() => null),
       ret.holder === MARKET_ID ? findPurchase(id).catch(() => null) : Promise.resolve(null),
+      retirementTx(id, ret).catch(() => null),
     ]);
-    return { status: "ok", cert: { ret, lot, parcel, purchase } };
+    return { status: "ok", cert: { ret, lot, parcel, purchase, burnTx } };
   } catch (e) {
     return { status: "error", msg: e instanceof Error ? e.message : String(e) };
   }
@@ -87,7 +88,7 @@ export default function Certificate({ id }: { id?: string }) {
     );
   }
 
-  const { ret, lot, parcel, purchase } = state.cert;
+  const { ret, lot, parcel, purchase, burnTx } = state.cert;
   const meta = PARCEL_LABELS[ret.parcel];
   const evidence = ver.find((v) => v.parcel === ret.parcel && v.period === ret.period);
   const date = new Date(Number(ret.ledger_time) * 1000).toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
@@ -120,6 +121,7 @@ export default function Certificate({ id }: { id?: string }) {
           {lot && <div><dt>Verificación satelital</dt><dd className="mono">NDVI {ndvi(lot.ndvi_milli)} · {fmt(lot.minted)} tCO₂e emitidas en el lote</dd></div>}
           {evidence && <div><dt>Escena Sentinel-2 L2A</dt><dd className="mono">{evidence.scene} ({evidence.scene_date})</dd></div>}
           {evidence?.tx && <div><dt>Transacción de emisión</dt><dd className="mono"><a href={`${EXPERT}/tx/${evidence.tx}`} target="_blank" rel="noreferrer">{short(evidence.tx, 8)} ↗</a></dd></div>}
+          {burnTx && <div><dt>Transacción de retiro</dt><dd className="mono"><a href={`${EXPERT}/tx/${burnTx}`} target="_blank" rel="noreferrer">{short(burnTx, 8)} ↗</a></dd></div>}
           {purchase && <div><dt>Comprador</dt><dd className="mono">{short(purchase.buyer, 6)}</dd></div>}
           {purchase && <div><dt>Pago</dt><dd className="mono">{fromUnits(purchase.paid)} {PAYMENT_ASSET_CODE}{purchase.fee !== undefined && purchase.fee > 0n ? ` (comisión de plataforma ${fromUnits(purchase.fee)} ${PAYMENT_ASSET_CODE})` : ""}</dd></div>}
           <div><dt>Titular al quemar</dt><dd className="mono">{holderLabel}</dd></div>

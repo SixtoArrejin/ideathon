@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  getLot, getOffer, getParcel, getRetirement, lotsOf, offerCount, retirementCount, totalRetired, totalSupply,
-  type LotBalance, type LotInfo, type Offer, type Parcel, type Retirement,
+  feeBps, getLot, getOffer, getParcel, getPurchase, getRetirement, lotsOf, offerCount, purchaseCount, retirementCount, totalRetired, totalSupply,
+  type PurchaseRow, type LotBalance, type LotInfo, type Offer, type Parcel, type Retirement,
 } from "./chain";
 import { PARCEL_IDS } from "./config";
 import { errText } from "./wallet";
@@ -22,6 +22,8 @@ type Data = {
   ver: Verification[];
   cover: Cover;
   rets: RetirementRow[];
+  purchases: PurchaseRow[];
+  fee: number;
   offers: OpenOffer[];
   myOffers: OpenOffer[];
   lotInfo: Record<string, LotInfo | null>;
@@ -52,6 +54,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
   const [lots, setLots] = useState<LotBalance[]>([]);
   const [err, setErr] = useState("");
+  const [purchases, setPurchases] = useState<PurchaseRow[]>([]);
+  const [fee, setFee] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [lotsLoaded, setLotsLoaded] = useState(false);
 
@@ -73,6 +77,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }));
       const open = os.filter((o): o is OpenOffer => !!o && o.open);
       setOffers(open);
+      const [pc, fb] = await Promise.all([purchaseCount(), feeBps()]);
+      setFee(fb);
+      const pl = await Promise.all(Array.from({ length: Number(pc) }, async (_, i) => {
+        const p = await getPurchase(i);
+        return p ? { ...p, id: i } : null;
+      }));
+      setPurchases(pl.filter((x): x is PurchaseRow => !!x));
       const keys = [...new Set(open.map((o) => `${o.parcel}:${o.period}`))];
       const infos = await Promise.all(keys.map(async (k) => {
         const [parcel, p] = k.split(":");
@@ -108,8 +119,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const myOffers = useMemo(() => offers.filter((o) => o.seller === wallet), [offers, wallet]);
 
   const value = useMemo(
-    () => ({ supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh }),
-    [supply, retired, parcels, ver, cover, rets, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh],
+    () => ({ supply, retired, parcels, ver, cover, rets, purchases, fee, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh }),
+    [supply, retired, parcels, ver, cover, rets, purchases, fee, offers, myOffers, lotInfo, lots, frozen, loaded, lotsLoaded, err, refresh],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

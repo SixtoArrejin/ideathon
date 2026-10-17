@@ -33,3 +33,10 @@ export const PARCEL_LABELS: Record<string, { name: string; zone: string }> = {
   CHACO1: { name: "Parque Nacional Chaco", zone: "Chaco · bosque húmedo" },
   TACOP1: { name: "Lote agrícola", zone: "Taco Pozo / Copo · Chaco" },
 };
+
+/** Reparte un pago entre vendedor y plataforma. La comisión se redondea hacia abajo a favor del vendedor, igual que en el contrato. */
+export function splitFee(total: bigint, feeBps: number) {
+  const fee = (total * BigInt(feeBps)) / 10000n;
+  return { fee, net: total - fee };
+}
+export const pct = (bps: number) => `${(bps / 100).toLocaleString("es-AR", { maximumFractionDigits: 2 })} %`;

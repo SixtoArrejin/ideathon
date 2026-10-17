@@ -77,6 +77,42 @@ export const offerCount = () => read<number>(market(), "offer_count");
 export const getOffer = (id: number) => read<Offer | null>(market(), "get_offer", u32(id));
 export const purchaseCount = () => read<number>(market(), "purchase_count");
 export const getPurchase = (id: number) => read<Purchase | null>(market(), "get_purchase", u32(id));
+export type PurchaseRow = Purchase & { id: number };
+
+/** Comisión de la plataforma en puntos básicos. Los mercados desplegados sin comisión no tienen la función: se toma como 0. */
+export const feeBps = () => read<number>(market(), "fee_bps").then(Number).catch(() => 0);
+
+/**
+ * Hash de la transacción que quemó un retiro. Busca el evento en el RPC, que conserva unos 7 días y escanea
+ * pocos bloques por consulta: se estima en qué bloque ocurrió a partir de su fecha y se pagina desde ahí.
+ * Si ya expiró, usa retirements.json, que guarda los hashes de los retiros oficiales.
+ */
+export async function retirementTx(id: number, r: Retirement): Promise<string | null> {
+  try {
+    const latest = (await server.getLatestLedger()).sequence;
+    const ledgersAgo = Math.max(0, Date.now() / 1000 - Number(r.ledger_time)) / 5; // ~5 s por bloque en Testnet
+    const margin = Math.max(3000, ledgersAgo * 0.15);
+    const startLedger = Math.max(1, Math.floor(latest - ledgersAgo - margin));
+    const endLedger = Math.ceil(latest - ledgersAgo + margin);
+    const filters = [{ type: "contract" as const, contractIds: [CONTRACT_ID], topics: [[xdr.ScVal.scvSymbol("retired").toXDR("base64"), "*"]] }];
+    let cursor: string | undefined;
+    for (let page = 0; page < 12; page++) {
+      const res = await server.getEvents(cursor ? { filters, cursor, limit: 200 } : { filters, startLedger, limit: 200 });
+      const hit = res.events.find((e) => {
+        const v = scValToNative(e.value) as { amount: bigint; beneficiary: string; parcel: string; period: number };
+        return v.parcel === r.parcel && Number(v.period) === r.period && BigInt(v.amount) === r.amount
+          && v.beneficiary === r.beneficiary && scValToNative(e.topic[1]) === r.holder;
+      });
+      if (hit) return hit.txHash;
+      if (!res.cursor || res.cursor === cursor || res.events.some((e) => e.ledger > endLedger)) break;
+      cursor = res.cursor;
+    }
+  } catch { /* sin RPC o fuera de la ventana de retención */ }
+  try {
+    const m = await (await fetch("/retirements.json")).json();
+    return m[`${CONTRACT_ID}:${id}`] ?? null;
+  } catch { return null; }
+}
 
 /** Publica una oferta: el lote pasa a custodia del mercado. */
 export const list = (seller: string, parcel: string, period: number, amount: bigint, pricePerTon: bigint) =>

@@ -3,13 +3,13 @@ import { buyAndRetire } from "../chain";
 import Modal from "../components/Modal";
 import { PAYMENT_ASSET_CODE } from "../config";
 import { useData, type OpenOffer } from "../data";
-import { fmt, fromUnits, lotLabel, ndvi, short } from "../lib";
+import { fmt, fromUnits, lotLabel, ndvi, pct, short, splitFee } from "../lib";
 import { hrefFor } from "../router";
 import { useUi } from "../ui";
 
 function BuyModal({ offer, onClose }: { offer: OpenOffer | null; onClose: () => void }) {
   const { wallet, transact } = useUi();
-  const { refresh } = useData();
+  const { refresh, fee: feeRate } = useData();
   const [amount, setAmount] = useState("");
   const [who, setWho] = useState("");
 
@@ -21,6 +21,7 @@ function BuyModal({ offer, onClose }: { offer: OpenOffer | null; onClose: () => 
   const n = amount ? BigInt(amount) : 0n;
   const tooMuch = n > offer.available;
   const total = n * offer.price_per_ton;
+  const { fee: commission, net } = splitFee(total, feeRate);
   const label = lotLabel(offer.parcel, offer.period);
   const ok = n > 0n && !tooMuch && who.trim().length > 1;
 
@@ -33,7 +34,8 @@ function BuyModal({ offer, onClose }: { offer: OpenOffer | null; onClose: () => 
       lead: "Es una sola transacción: si el pago o la quema fallan, no se cobra ni se quema nada.",
       rows: [
         { label: "Pagás", value: `${fromUnits(total)} ${PAYMENT_ASSET_CODE}` },
-        { label: "Al vendedor", value: short(offer.seller, 4) },
+        { label: feeRate > 0 ? "Al vendedor (neto)" : "Al vendedor", value: `${fromUnits(net)} ${PAYMENT_ASSET_CODE} · ${short(offer.seller, 4)}` },
+        ...(feeRate > 0 ? [{ label: `Comisión de la plataforma (${pct(feeRate)})`, value: `${fromUnits(commission)} ${PAYMENT_ASSET_CODE}` }] : []),
         { label: "Se queman", value: `${fmt(n)} t del lote ${label}` },
         { label: "A nombre de", value: name },
       ],
@@ -64,7 +66,12 @@ function BuyModal({ offer, onClose }: { offer: OpenOffer | null; onClose: () => 
       </div>
       {tooMuch
         ? <p className="msg crit">La oferta tiene {fmt(offer.available)} t disponibles.</p>
-        : n > 0n && <p className="total">Total a pagar <b className="mono">{fromUnits(total)} {PAYMENT_ASSET_CODE}</b></p>}
+        : n > 0n && (
+          <p className="total">
+            Total a pagar <b className="mono">{fromUnits(total)} {PAYMENT_ASSET_CODE}</b>
+            {feeRate > 0 && <span className="muted small"> · al vendedor {fromUnits(net)} · comisión de la plataforma {fromUnits(commission)} ({pct(feeRate)})</span>}
+          </p>
+        )}
     </Modal>
   );
 }

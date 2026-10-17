@@ -42,7 +42,8 @@ Decisiones de esta versión: [ADR 0001](adr/0001-lotes-y-compra-retiro-atomico.m
 flowchart LR
   sentinel["Sentinel-2 L2A via STAC"] --> oracle["Oraculo Python"]
   oracle -->|"submit_verification"| greenton["GreenTon v2"]
-  owner["Freighter del titular"] -->|"register, transfer, retire"| greenton
+  admin["Freighter del admin (auditor)"] -->|"register_parcel"| greenton
+  owner["Freighter del titular"] -->|"transfer, retire"| greenton
   owner -->|"list, cancel"| market["Mercado"]
   buyer["Freighter del comprador"] -->|"buy_and_retire"| market
   market -->|"transfer, retire"| greenton
@@ -61,6 +62,7 @@ No hay servidor propio. La web lee el estado simulando llamadas contra el RPC y 
 ## 4. GreenTon v2 (`contracts/greenton`)
 
 - **Lote:** `Lot { parcel: Symbol, period: u32 }`. Lo crea `submit_verification` cuando emite, y guarda `LotInfo { minted, ndvi_milli, ledger_time }`.
+- **Registro de predios:** `register_parcel` exige la firma del **admin** (auditor), que da de alta el predio a nombre del `owner` después de verificar titularidad y polígono fuera de la cadena. El propietario ya no puede registrar por su cuenta.
 - **Reglas que no cambian:** solo el oráculo emite; una emisión por predio y período, y el período se consume aunque congele; NDVI < 0,400 o caída > 0,150 respecto de la línea base congela y emite 0; `unfreeze` solo lo hace el admin, y la línea base pasa al último NDVI medido.
 - **Token por lotes:** `transfer(from, to, parcel, period, amount)`, `retire(holder, parcel, period, amount, beneficiary) -> u32`, `lot_balance`, `lots_of(who)`, `get_lot`, y `balance(who)` como suma de todos los lotes.
 - **Registro de retiros:** `Retirement { holder, parcel, period, amount, beneficiary, ledger_time }`.
@@ -72,19 +74,20 @@ No implementa la interfaz SEP-41: un saldo sin lote no tiene sentido en este mod
 
 ## 5. Mercado (`contracts/market`)
 
-Se configura al desplegar con el ID de GreenTon y el del SAC del activo de pago.
+Se configura al desplegar con el ID de GreenTon, el del SAC del activo de pago, la cuenta de **tesorería** y la **comisión de plataforma** en puntos básicos (`fee_bps`, de 0 a `MAX_FEE_BPS` = 1000, es decir, hasta 10 %). Un valor mayor al tope hace fallar el despliegue.
 
 | Función | Firma | Qué hace |
 |---|---|---|
 | `list(seller, parcel, period, amount, price_per_ton) -> u32` | Vendedor | Mueve las toneladas del lote a custodia del mercado y crea la oferta |
-| `buy_and_retire(buyer, offer_id, amount, beneficiary) -> u32` | Comprador | Paga `amount × price_per_ton` al vendedor y quema `amount` del lote a nombre de `beneficiary`. Devuelve el ID de la compra |
+| `buy_and_retire(buyer, offer_id, amount, beneficiary) -> u32` | Comprador | Cobra `amount × price_per_ton`: la parte `fee` va a la tesorería y el resto al vendedor; quema `amount` del lote a nombre de `beneficiary`. Devuelve el ID de la compra |
 | `cancel(seller, offer_id)` | Vendedor de la oferta | Devuelve el remanente y cierra la oferta |
-| `get_offer`, `offer_count`, `get_purchase`, `purchase_count` | Nadie | Lectura |
+| `get_offer`, `offer_count`, `get_purchase`, `purchase_count`, `fee_bps`, `treasury` | Nadie | Lectura |
 
 - **Atomicidad:** el pago y la quema son llamadas entre contratos en la misma transacción. Si cualquiera falla, se revierte todo.
 - **Quién firma la quema:** el mercado llama a `retire` con su propia dirección como titular. Soroban autoriza a un contrato que invoca directamente con su dirección, así que no hace falta otra firma.
 - **Precio:** en la unidad mínima del activo (7 decimales en XLM y USDC). El total va en `i128` con `overflow-checks`.
-- **Registro:** `Purchase { buyer, offer_id, amount, paid, retirement_id }` y el evento `Purchased`. En el retiro de GreenTon, el titular es la dirección del mercado.
+- **Comisión:** `fee = paid × fee_bps / 10.000`, redondeado hacia abajo (a favor del vendedor). El vendedor recibe `paid − fee`, así que vendedor más tesorería siempre suman lo que pagó el comprador. Con `fee_bps = 0` la tesorería no recibe nada.
+- **Registro:** `Purchase { buyer, offer_id, amount, paid, fee, retirement_id }` y el evento `Purchased`. En el retiro de GreenTon, el titular es la dirección del mercado.
 - **Errores:** monto inválido, precio inválido, oferta inexistente, oferta cerrada, cantidad mayor a la disponible, vendedor equivocado.
 
 ### Flujo de compra
@@ -114,9 +117,10 @@ La empresa necesita una cuenta de Stellar con saldo del activo de pago y Freight
 - **Oráculo** (`oracle/run.py`): sin cambios de interfaz. `register` da de alta los predios y `verify` reporta NDVI y toneladas. Cada entrada de `web/public/verifications.json` se identifica por predio y período, es decir, por lote. La evidencia del contrato v1 está archivada en `web/public/verifications.v1.json`.
 - **Web** (`web/src`):
   - Explorador de predios con evidencia satelital por lote.
-  - Mercado: ofertas abiertas con lote, NDVI del lote, toneladas, precio y un aviso si el predio quedó congelado después.
+  - Mercado: ofertas abiertas con lote, NDVI del lote, toneladas, precio y un aviso si el predio quedó congelado después. Si el mercado cobra comisión, el modal de compra desglosa cuánto va al vendedor y cuánto a la plataforma; el de oferta muestra el neto que recibe el propietario.
   - Mi cuenta: lotes propios, publicar y cancelar ofertas, retirar de un lote propio.
-  - Registro de retiros con el lote de origen.
+  - Registro de retiros con el lote de origen y un enlace al certificado de cada uno.
+  - Certificado de compensación (`#/certificado/N`): lote, verificación satelital, escena, comprador y pago, hash de la transacción de emisión y de la de retiro, y un QR al contrato. Es imprimible. Mi cuenta lista también los retiros hechos al comprar en el mercado, con su certificado.
   - Los IDs de los contratos llegan por `VITE_GREENTON_ID`, `VITE_MARKET_ID` y `VITE_PAYMENT_ASSET_ID`.
 
 ---
@@ -131,3 +135,12 @@ Fuera de esta versión. Restricciones para cuando se encare:
 - **Estado inicial del predio:** pendiente de validación documental, no activo.
 - **Claves:** nunca en la base. Si hace falta custodia asistida, un KMS o passkeys.
 - **Auth y permisos:** Supabase Auth con RLS en todas las tablas expuestas.
+
+---
+
+## 8. Estado de despliegue de estos cambios
+
+Los contratos oficiales de la demo (IDs en el README) corresponden al tag `contratos-desplegados-testnet` y **no tienen** la comisión ni el registro por admin: la web lo detecta y no muestra desglose de comisión cuando `fee_bps` no existe. El código de `main` ya los incluye. Se pueden probar en Testnet con contratos de prueba propios con `scripts/probar-modelo-negocio.sh` (ver `DEPLOY.md`, sección 6).
+
+Siguen sin implementarse, por requerir cambios de contrato y un nuevo despliegue: el fondo de reserva y el cargo de alta (ver `docs/specs/modelo-de-negocio.md`, §5.2 y §5.3), y el formulario privado de alta con KYC (Supabase).
+

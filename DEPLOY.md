@@ -98,3 +98,5 @@ scripts/probar-modelo-negocio.sh        # 500 = 5 % de comisión; otro valor: sc
 ```
 
 Compila, despliega, y verifica con 12 chequeos que el propietario no puede registrar, que el admin sí, y que en una compra la comisión llega a la tesorería y el resto al vendedor. Al final imprime el comando para ver esos contratos en la web local (`VITE_GREENTON_ID` y `VITE_MARKET_ID`). Los datos son de prueba, no mediciones reales. Las pruebas de la lógica sin red están en `cargo test`.
+
+El hash de la transacción de retiro que muestra el certificado se busca solo en los eventos del RPC, que conserva unos 7 días. Para conservarlo después, agregarlo a `web/public/retirements.json` con la clave `<ID de GreenTon>:<n.º de retiro>`.

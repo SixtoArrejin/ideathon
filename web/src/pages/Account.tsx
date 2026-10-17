@@ -4,7 +4,7 @@ import CopyButton from "../components/CopyButton";
 import Modal from "../components/Modal";
 import { EXPERT, PAYMENT_ASSET_CODE } from "../config";
 import { useData, type OpenOffer } from "../data";
-import { fmt, fromUnits, lotLabel, ndvi, PARCEL_LABELS, short, toUnits } from "../lib";
+import { fmt, fromUnits, lotLabel, ndvi, PARCEL_LABELS, pct, short, splitFee, toUnits } from "../lib";
 import { hrefFor } from "../router";
 import { useUi } from "../ui";
 
@@ -32,7 +32,7 @@ function useXlm(wallet: string) {
 
 function LotModal({ action, onClose }: { action: Action | null; onClose: () => void }) {
   const { wallet, transact } = useUi();
-  const { refresh } = useData();
+  const { refresh, fee: feeRate } = useData();
   const [amount, setAmount] = useState("");
   const [price, setPrice] = useState("");
   const [who, setWho] = useState("");
@@ -56,6 +56,10 @@ function LotModal({ action, onClose }: { action: Action | null; onClose: () => v
           { label: "Toneladas", value: `${fmt(n)} t` },
           { label: "Precio", value: `${fromUnits(unit)} ${PAYMENT_ASSET_CODE} por tonelada` },
           { label: "Total si se vende todo", value: `${fromUnits(unit * n)} ${PAYMENT_ASSET_CODE}` },
+          ...(feeRate > 0 ? [
+            { label: `Comisión de la plataforma (${pct(feeRate)})`, value: `${fromUnits(splitFee(unit * n, feeRate).fee)} ${PAYMENT_ASSET_CODE}` },
+            { label: "Recibís, neto", value: `${fromUnits(splitFee(unit * n, feeRate).net)} ${PAYMENT_ASSET_CODE}` },
+          ] : []),
         ],
         note: "Mientras la oferta esté abierta, esas toneladas no aparecen en tu cuenta.",
         confirmLabel: "Firmar con Freighter",
@@ -92,6 +96,7 @@ function LotModal({ action, onClose }: { action: Action | null; onClose: () => v
       </>
     }>
       <p>{mode === "offer" ? `Tenés ${fmt(lot.amount)} t de este lote. Elegí cuántas ofrecer y a qué precio.` : `Tenés ${fmt(lot.amount)} t de este lote. Retirar las quema para siempre.`}</p>
+      {mode === "offer" && feeRate > 0 && <p className="muted small">La plataforma retiene {pct(feeRate)} de cada venta, calculado sobre el total que paga el comprador.</p>}
       <div className="fields">
         <label htmlFor="l-amount">Toneladas
           <input id="l-amount" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value.replace(/\D/g, "").slice(0, 12))} />
@@ -113,7 +118,7 @@ function LotModal({ action, onClose }: { action: Action | null; onClose: () => v
 
 export default function Account() {
   const { wallet, connecting, connect, disconnect, transact } = useUi();
-  const { lots, myOffers, refresh, lotsLoaded, parcels, rets } = useData();
+  const { lots, myOffers, refresh, lotsLoaded, parcels, rets, purchases } = useData();
   const [action, setAction] = useState<Action | null>(null);
   const [infos, setInfos] = useState<Record<string, LotInfo | null>>({});
   const xlm = useXlm(wallet);
@@ -127,7 +132,9 @@ export default function Account() {
 
   const held = useMemo(() => lots.reduce((s, l) => s + l.amount, 0n), [lots]);
   const custody = useMemo(() => myOffers.reduce((s, o) => s + o.available, 0n), [myOffers]);
-  const mine = useMemo(() => rets.filter((r) => r.holder === wallet), [rets, wallet]);
+  // Retiros propios: los que quemó esta cuenta y los de compras hechas en el mercado (ahí el titular al quemar es el mercado).
+  const purchaseOf = useMemo(() => new Map(purchases.filter((p) => p.buyer === wallet).map((p) => [p.retirement_id, p])), [purchases, wallet]);
+  const mine = useMemo(() => rets.filter((r) => r.holder === wallet || purchaseOf.has(r.id)), [rets, wallet, purchaseOf]);
   const burned = useMemo(() => mine.reduce((s, r) => s + r.amount, 0n), [mine]);
 
   if (!wallet) {
@@ -238,18 +245,27 @@ export default function Account() {
       <section className="section-tight">
         <h2>Mis retiros</h2>
         {mine.length === 0 ? (
-          <p className="muted">Todavía no retiraste toneladas desde esta cuenta. Si compraste en el mercado, esos retiros figuran como «vía mercado» en <a href={hrefFor("transparencia")}>Transparencia</a>.</p>
+          <p className="muted">Todavía no compensaste desde esta cuenta. Cuando retires un lote propio, o compres y quemes en el <a href={hrefFor("mercado")}>mercado</a>, tu certificado aparece acá.</p>
         ) : (
           <>
             <p className="muted small">{fmt(burned)} tCO₂e quemadas desde esta cuenta.</p>
             <ul className="ledger">
-              {mine.map((r, i) => (
-                <li key={i}>
-                  <b className="mono">{fmt(r.amount)} tCO₂e · {lotLabel(r.parcel, r.period)}</b>
-                  <span>{r.beneficiary}</span>
-                  <span className="muted small">{new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}</span>
-                </li>
-              ))}
+              {mine.map((r) => {
+                const buy = purchaseOf.get(r.id);
+                return (
+                  <li key={r.id} className="line">
+                    <div>
+                      <b className="mono">{fmt(r.amount)} tCO₂e · {lotLabel(r.parcel, r.period)}</b>
+                      <span>{r.beneficiary}</span>
+                      <span className="muted small">
+                        {new Date(Number(r.ledger_time) * 1000).toLocaleDateString("es-AR")}
+                        {buy ? ` · compra en el mercado, pagaste ${fromUnits(buy.paid)} ${PAYMENT_ASSET_CODE}` : ""}
+                      </span>
+                    </div>
+                    <a className="copy" href={hrefFor("certificado", String(r.id))}>Certificado</a>
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}
