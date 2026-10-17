@@ -5,6 +5,7 @@ use soroban_sdk::{symbol_short, testutils::Address as _, Env};
 struct Setup {
     e: Env,
     c: GreenTonClient<'static>,
+    admin: Address,
     owner: Address,
     oracle: Address,
 }
@@ -23,7 +24,49 @@ fn setup() -> Setup {
         &120,
         &String::from_str(&e, "-57.2,-28.4,-57.1,-28.3"),
     );
-    Setup { e, c, owner, oracle }
+    Setup { e, c, admin, owner, oracle }
+}
+
+#[test]
+fn registering_a_parcel_requires_the_admin_not_the_owner() {
+    let s = setup();
+    // `setup` ya registró IBERA1: la única firma exigida fue la del admin.
+    let auths = s.e.auths();
+    assert_eq!(auths.len(), 1);
+    assert_eq!(auths[0].0, s.admin);
+    assert_ne!(auths[0].0, s.owner);
+    assert_eq!(s.c.get_parcel(&symbol_short!("IBERA1")).owner, s.owner);
+}
+
+#[test]
+fn nobody_but_the_admin_can_register_a_parcel() {
+    let e = Env::default();
+    let admin = Address::generate(&e);
+    let oracle = Address::generate(&e);
+    let owner = Address::generate(&e);
+    let id = e.register(GreenTon, (&admin, &oracle));
+    let c = GreenTonClient::new(&e, &id);
+    // Sin ninguna firma autorizada, el alta se rechaza (aunque `owner` quisiera registrarse).
+    let r = c.try_register_parcel(
+        &owner,
+        &symbol_short!("IBERA2"),
+        &10,
+        &String::from_str(&e, "-57.2,-28.4,-57.1,-28.3"),
+    );
+    assert!(r.is_err());
+    assert!(c.try_get_parcel(&symbol_short!("IBERA2")).is_err());
+}
+
+#[test]
+fn duplicate_parcel_is_rejected() {
+    let s = setup();
+    let r = s.c.try_register_parcel(
+        &s.owner,
+        &symbol_short!("IBERA1"),
+        &1,
+        &String::from_str(&s.e, "0,0,1,1"),
+    );
+    assert_eq!(r, Err(Ok(Error::ParcelExists)));
 }
 
 #[test]

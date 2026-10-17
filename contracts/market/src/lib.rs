@@ -3,7 +3,8 @@
 //!
 //! El vendedor publica una oferta sobre un lote (predio, período) y el mercado custodia esas
 //! toneladas. El comprador paga con un activo de Stellar (SAC) y, en la misma transacción,
-//! el mercado retira (quema) las toneladas a nombre del beneficiario. No hay compra sin quema.
+//! el mercado reparte el pago (vendedor y comisión de plataforma) y retira (quema) las toneladas
+//! a nombre del beneficiario. No hay compra sin quema.
 
 use soroban_sdk::{
     contract, contractclient, contracterror, contractevent, contractimpl, contracttype, token,
@@ -24,6 +25,10 @@ pub trait GreenTonApi {
     ) -> u32;
 }
 
+/// Comisión máxima de la plataforma, en puntos básicos (1000 = 10 %).
+pub const MAX_FEE_BPS: u32 = 1_000;
+const BPS: i128 = 10_000;
+
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
 #[repr(u32)]
@@ -34,6 +39,7 @@ pub enum Error {
     OfferClosed = 4,
     AmountExceedsAvailable = 5,
     NotSeller = 6,
+    InvalidFee = 7,
 }
 
 #[contracttype]
@@ -54,7 +60,10 @@ pub struct Purchase {
     pub buyer: Address,
     pub offer_id: u32,
     pub amount: i128,
+    /// Total pagado por el comprador (incluye la comisión).
     pub paid: i128,
+    /// Parte de `paid` que fue a la tesorería; el vendedor recibió `paid - fee`.
+    pub fee: i128,
     pub retirement_id: u32,
 }
 
@@ -62,6 +71,8 @@ pub struct Purchase {
 enum Key {
     GreenTon,
     PaymentAsset,
+    Treasury,
+    FeeBps,
     OfferCount,
     PurchaseCount,
     Offer(u32),
@@ -88,6 +99,7 @@ pub struct Purchased {
     pub period: u32,
     pub amount: i128,
     pub paid: i128,
+    pub fee: i128,
     pub retirement_id: u32,
 }
 
@@ -116,9 +128,23 @@ fn read_count(e: &Env, k: &Key) -> u32 {
 
 #[contractimpl]
 impl Market {
-    pub fn __constructor(e: Env, greenton: Address, payment_asset: Address) {
+    /// `fee_bps` es la comisión de la plataforma sobre cada compra (0 a `MAX_FEE_BPS`) y
+    /// `treasury` la cuenta que la recibe.
+    pub fn __constructor(
+        e: Env,
+        greenton: Address,
+        payment_asset: Address,
+        treasury: Address,
+        fee_bps: u32,
+    ) -> Result<(), Error> {
+        if fee_bps > MAX_FEE_BPS {
+            return Err(Error::InvalidFee);
+        }
         e.storage().instance().set(&Key::GreenTon, &greenton);
         e.storage().instance().set(&Key::PaymentAsset, &payment_asset);
+        e.storage().instance().set(&Key::Treasury, &treasury);
+        e.storage().instance().set(&Key::FeeBps, &fee_bps);
+        Ok(())
     }
 
     /// Publica una oferta sobre un lote y lo pone en custodia del mercado. Devuelve el ID.
@@ -154,8 +180,9 @@ impl Market {
         Ok(id)
     }
 
-    /// Paga al vendedor y quema `amount` toneladas del lote a nombre de `beneficiary`,
-    /// todo en la misma transacción. Devuelve el ID de la compra.
+    /// Cobra al comprador, paga al vendedor (menos la comisión, que va a la tesorería) y quema
+    /// `amount` toneladas del lote a nombre de `beneficiary`, todo en la misma transacción.
+    /// La comisión se redondea hacia abajo, a favor del vendedor. Devuelve el ID de la compra.
     pub fn buy_and_retire(
         e: Env,
         buyer: Address,
@@ -175,13 +202,20 @@ impl Market {
             return Err(Error::AmountExceedsAvailable);
         }
         let paid = amount * offer.price_per_ton;
+        let fee_bps: u32 = e.storage().instance().get(&Key::FeeBps).unwrap();
+        let fee = paid * fee_bps as i128 / BPS;
 
         offer.available -= amount;
         offer.open = offer.available > 0;
         e.storage().persistent().set(&Key::Offer(offer_id), &offer);
 
         let asset: Address = e.storage().instance().get(&Key::PaymentAsset).unwrap();
-        token::TokenClient::new(&e, &asset).transfer(&buyer, &offer.seller, &paid);
+        let pay = token::TokenClient::new(&e, &asset);
+        pay.transfer(&buyer, &offer.seller, &(paid - fee));
+        if fee > 0 {
+            let treasury: Address = e.storage().instance().get(&Key::Treasury).unwrap();
+            pay.transfer(&buyer, &treasury, &fee);
+        }
         let retirement_id = greenton(&e).retire(
             &e.current_contract_address(),
             &offer.parcel,
@@ -191,7 +225,7 @@ impl Market {
         );
 
         let id = read_count(&e, &Key::PurchaseCount);
-        let purchase = Purchase { buyer: buyer.clone(), offer_id, amount, paid, retirement_id };
+        let purchase = Purchase { buyer: buyer.clone(), offer_id, amount, paid, fee, retirement_id };
         e.storage().persistent().set(&Key::Purchase(id), &purchase);
         e.storage().instance().set(&Key::PurchaseCount, &(id + 1));
         Purchased {
@@ -201,6 +235,7 @@ impl Market {
             period: offer.period,
             amount,
             paid,
+            fee,
             retirement_id,
         }
         .publish(&e);
@@ -255,6 +290,14 @@ impl Market {
 
     pub fn payment_asset(e: Env) -> Address {
         e.storage().instance().get(&Key::PaymentAsset).unwrap()
+    }
+
+    pub fn treasury(e: Env) -> Address {
+        e.storage().instance().get(&Key::Treasury).unwrap()
+    }
+
+    pub fn fee_bps(e: Env) -> u32 {
+        e.storage().instance().get(&Key::FeeBps).unwrap()
     }
 }
 

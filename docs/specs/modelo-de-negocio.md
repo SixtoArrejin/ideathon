@@ -174,3 +174,27 @@ Cuando una empresa o persona quema GTON (ya sea vía `buy_and_retire` en el merc
 2. **Emisión objetiva por Lotes:** El **Oráculo** satelital mide el NDVI de cada período y el contrato emite el **Lote** `(predio, período)` en la cuenta del propietario únicamente si el bosque se mantiene en pie.
 3. **Mercado de Impacto Directo («Comprar es Compensar»):** El propietario publica ofertas de sus lotes fijando el precio por tonelada. Cuando una empresa compra en el mercado, el pago al propietario, la comisión de plataforma y la quema irreversible (`retire`) ocurren en **una única transacción atómica**, eliminando el riesgo de contraparte y la reventa especulativa.
 4. **Certificación con trazabilidad hasta la escena satelital:** Cada quema genera un registro inmutable en Soroban y un **Certificado de Compensación** auditable públicamente que conecta el nombre del beneficiario con las toneladas retiradas, el predio del Gran Chaco/NEA y la escena exacta de Sentinel-2 que verificó la captura.
+
+---
+
+## 8. Estado de implementación (rama `feat/modelo-de-negocio`)
+
+Implementado y probado en local (`cargo test`: 13 + 14 tests, `stellar contract build`, tests del oráculo y `npm run build`). **Nada está desplegado**: la entrega vigente usa los contratos ya publicados en Testnet.
+
+| Punto del spec | Estado | Dónde |
+|---|---|---|
+| Alta solo por el verificador (Decisión 1A) | Hecho | `register_parcel` exige `admin.require_auth()`; `oracle/run.py register` firma como `admin` |
+| Comisión de plataforma atómica (§5.1) | Hecho | El constructor del mercado recibe `treasury` y `fee_bps` (tope 10 %, `MAX_FEE_BPS`); `buy_and_retire` paga `total - fee` al vendedor y `fee` a la tesorería; `Purchase` y el evento guardan `fee`. La comisión se redondea hacia abajo, a favor del vendedor |
+| Certificado digital verificable, Nivel 2 (Decisión 3) | Hecho | Vista `/#/certificado/<retirement_id>` (`web/src/pages/Certificate.tsx`), con enlace desde Transparencia, QR al contrato en Stellar Expert y estilos de impresión a PDF |
+| Compra con quema inmediata (Decisión 2A) | Sin cambios | Ya estaba implementada |
+
+**Qué implica desplegarlo:** GreenTon y el mercado cambian de ID (nuevo WASM y nuevo constructor), hay que volver a registrar y verificar los predios, y actualizar `web/src/config.ts` y el README (ver `DEPLOY.md`).
+
+### Brechas que el spec todavía deja abiertas
+
+1. **Las tarifas se apilan y no se suman en ningún lado.** Comisión de mercado (5–8 %), cargo de alta (3–5 % del primer lote) y *buffer pool* (10 % de cada emisión) pueden quitarle al propietario cerca de un 23 % del primer lote. Falta una tabla con el neto que recibe el dueño en un ejemplo concreto y un tope global.
+2. **El *buffer pool* (§5.3) no está implementado** y choca con la regla «1 GTON = 1 tCO₂e emitida al propietario»: hay que decidir si el 10 % retenido se emite a una cuenta de reserva y quién puede liberarlo.
+3. **El formulario privado con documentación (Supabase, §3 y Etapa 1) no existe todavía.** Hoy «Proponer un predio» sigue abriendo un issue público de GitHub con datos de contacto, lo cual es incompatible con subir título y KYC.
+4. **Falta decidir la tesorería:** cuenta única o multifirma, y que necesita trustline si cobra en USDC.
+5. **El certificado no puede mostrar el hash de la transacción de retiro**, porque el contrato no lo guarda (solo el de emisión, que viene de `verifications.json`). Para incluirlo hace falta un indexador de eventos o guardarlo fuera de la cadena.
+6. **Sin rotación de claves** de `admin`, `oracle` ni `treasury`: ahora el `admin` controla además el alta de predios, así que su compromiso pesa más que antes.

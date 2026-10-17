@@ -72,9 +72,9 @@ Quedan fijos en el constructor (`admin`, `oracle`). No hay gobernanza ni rotaci�
 
 | Rol | Quién firma | Qué puede hacer |
 |---|---|---|
-| Admin | Cuenta admin | `unfreeze`: levanta el congelamiento y pasa la línea base al último NDVI |
+| Admin | Cuenta admin | `register_parcel`: da de alta un predio ya auditado a nombre de su dueño. `unfreeze`: levanta el congelamiento y pasa la línea base al último NDVI |
 | Oráculo | Cuenta oráculo | `submit_verification`: reporta NDVI y toneladas del período |
-| Propietario | Cuenta que registra | `register_parcel`: da de alta el predio y recibe lo emitido |
+| Propietario | Cuenta fijada en el alta | Recibe lo emitido, publica ofertas (`list`) y las cancela |
 | Titular con saldo | Cualquier cuenta con GTON | `transfer` y `retire` |
 
 La interfaz solo muestra los tres predios fijos y el flujo de retiro con Freighter. El alta de predios y la verificación corren por la CLI, no desde la web.

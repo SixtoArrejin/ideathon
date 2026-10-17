@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import { CONFIGURED } from "./config";
 import { DataProvider, useData } from "./data";
 import Account from "./pages/Account";
+import Certificate from "./pages/Certificate";
 import Home from "./pages/Home";
 import Market from "./pages/Market";
 import Parcels from "./pages/Parcels";
@@ -36,6 +37,7 @@ function Shell() {
         {page === "radar" && <Radar />}
         {page === "cuenta" && <Account />}
         {page === "transparencia" && <Transparency />}
+        {page === "certificado" && <Certificate id={param} />}
       </main>
       <Footer />
     </>

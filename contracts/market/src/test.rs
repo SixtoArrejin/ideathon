@@ -10,6 +10,7 @@ use soroban_sdk::{
 
 const PERIOD: u32 = 202603;
 const PRICE: i128 = 15_000_000; // 1,5 unidades del activo por tonelada
+const FEE_BPS: u32 = 500; // 5 %
 
 struct Setup {
     e: Env,
@@ -19,15 +20,21 @@ struct Setup {
     pay_admin: StellarAssetClient<'static>,
     seller: Address,
     buyer: Address,
+    treasury: Address,
 }
 
 fn setup() -> Setup {
+    setup_with_fee(FEE_BPS)
+}
+
+fn setup_with_fee(fee_bps: u32) -> Setup {
     let e = Env::default();
     e.mock_all_auths();
     let admin = Address::generate(&e);
     let oracle = Address::generate(&e);
     let seller = Address::generate(&e);
     let buyer = Address::generate(&e);
+    let treasury = Address::generate(&e);
 
     let gton_id = e.register(GreenTon, (&admin, &oracle));
     let gton = GreenTonClient::new(&e, &gton_id);
@@ -44,9 +51,9 @@ fn setup() -> Setup {
     let pay_admin = StellarAssetClient::new(&e, &sac.address());
     pay_admin.mint(&buyer, &(1_000 * PRICE));
 
-    let market_id = e.register(Market, (&gton_id, &sac.address()));
+    let market_id = e.register(Market, (&gton_id, &sac.address(), &treasury, &fee_bps));
     let market = MarketClient::new(&e, &market_id);
-    Setup { e, gton, market, pay, pay_admin, seller, buyer }
+    Setup { e, gton, market, pay, pay_admin, seller, buyer, treasury }
 }
 
 fn p() -> Symbol {
@@ -75,7 +82,10 @@ fn full_purchase_pays_seller_and_burns_lot() {
     let id = s.market.list(&s.seller, &p(), &PERIOD, &60, &PRICE);
     let purchase = s.market.buy_and_retire(&s.buyer, &id, &60, &name(&s.e));
 
-    assert_eq!(s.pay.balance(&s.seller), 60 * PRICE);
+    let total = 60 * PRICE;
+    let fee = total * FEE_BPS as i128 / 10_000;
+    assert_eq!(s.pay.balance(&s.seller), total - fee);
+    assert_eq!(s.pay.balance(&s.treasury), fee);
     assert_eq!(s.pay.balance(&s.buyer), 940 * PRICE);
     assert_eq!(s.gton.lot_balance(&s.market.address, &p(), &PERIOD), 0);
     assert_eq!(s.gton.total_supply(), 40);
@@ -84,7 +94,8 @@ fn full_purchase_pays_seller_and_burns_lot() {
 
     let rec = s.market.get_purchase(&purchase).unwrap();
     assert_eq!(rec.buyer, s.buyer);
-    assert_eq!(rec.paid, 60 * PRICE);
+    assert_eq!(rec.paid, total);
+    assert_eq!(rec.fee, fee);
     let r = s.gton.get_retirement(&rec.retirement_id).unwrap();
     assert_eq!(r.parcel, p());
     assert_eq!(r.period, PERIOD);
@@ -176,4 +187,66 @@ fn rejects_invalid_listing() {
         s.market.try_buy_and_retire(&s.buyer, &99, &1, &name(&s.e)),
         Err(Ok(Error::OfferNotFound))
     );
+}
+
+#[test]
+fn fee_rounds_down_in_favor_of_the_seller() {
+    let s = setup();
+    // 1 tonelada a 19 unidades mínimas: 19 * 5 % = 0,95 -> comisión 0.
+    let id = s.market.list(&s.seller, &p(), &PERIOD, &1, &19);
+    s.market.buy_and_retire(&s.buyer, &id, &1, &name(&s.e));
+    assert_eq!(s.pay.balance(&s.seller), 19);
+    assert_eq!(s.pay.balance(&s.treasury), 0);
+
+    // 3 toneladas a 19: total 57, 5 % = 2,85 -> comisión 2, vendedor 55.
+    let id = s.market.list(&s.seller, &p(), &PERIOD, &3, &19);
+    let pid = s.market.buy_and_retire(&s.buyer, &id, &3, &name(&s.e));
+    assert_eq!(s.market.get_purchase(&pid).unwrap().fee, 2);
+    assert_eq!(s.pay.balance(&s.treasury), 2);
+    assert_eq!(s.pay.balance(&s.seller), 19 + 55);
+}
+
+#[test]
+fn seller_plus_treasury_always_equals_what_the_buyer_paid() {
+    let s = setup();
+    let id = s.market.list(&s.seller, &p(), &PERIOD, &97, &PRICE);
+    let before = s.pay.balance(&s.buyer);
+    s.market.buy_and_retire(&s.buyer, &id, &37, &name(&s.e));
+    let spent = before - s.pay.balance(&s.buyer);
+    assert_eq!(spent, 37 * PRICE);
+    assert_eq!(s.pay.balance(&s.seller) + s.pay.balance(&s.treasury), spent);
+}
+
+#[test]
+fn zero_fee_pays_the_seller_everything() {
+    let s = setup_with_fee(0);
+    assert_eq!(s.market.fee_bps(), 0);
+    let id = s.market.list(&s.seller, &p(), &PERIOD, &10, &PRICE);
+    let pid = s.market.buy_and_retire(&s.buyer, &id, &10, &name(&s.e));
+    assert_eq!(s.pay.balance(&s.seller), 10 * PRICE);
+    assert_eq!(s.pay.balance(&s.treasury), 0);
+    assert_eq!(s.market.get_purchase(&pid).unwrap().fee, 0);
+}
+
+#[test]
+fn fee_and_treasury_are_readable() {
+    let s = setup();
+    assert_eq!(s.market.fee_bps(), FEE_BPS);
+    assert_eq!(s.market.treasury(), s.treasury);
+}
+
+#[test]
+#[should_panic(expected = "Error(Contract, #7)")]
+fn constructor_rejects_a_fee_above_the_cap() {
+    let e = Env::default();
+    let a = Address::generate(&e);
+    e.register(Market, (&a, &a, &a, &(MAX_FEE_BPS + 1)));
+}
+
+#[test]
+fn constructor_accepts_the_exact_cap() {
+    let e = Env::default();
+    let a = Address::generate(&e);
+    let id = e.register(Market, (&a, &a, &a, &MAX_FEE_BPS));
+    assert_eq!(MarketClient::new(&e, &id).fee_bps(), MAX_FEE_BPS);
 }
