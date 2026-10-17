@@ -67,3 +67,9 @@ Durante el desarrollo se detectó y corrigió un error real: sin aplicar el offs
 - Entrevistas con propietarios, ONG/INTA y empresas compradoras.
 - Que el factor NDVI→tCO₂e (simplificado) se reemplace por una metodología reconocida (p. ej. VCS/IPCC).
 - Que un auditor humano real participe del ciclo (`unfreeze` está pensado para eso).
+
+## 5. Uso real y revisión externa
+
+- **Uso real de la web con billetera.** Desde la web, una cuenta con Freighter distinta de las que usamos en el desarrollo hizo dos compras y quemas en los contratos oficiales de Testnet: 100 t y 15 t del lote IMPEN1 2026, pagadas en XLM al propietario, a nombre de «Asymmetric». Es la evidencia de que el flujo completo (conectar, firmar, pagar y quemar en una transacción) funciona fuera de nuestras cuentas de prueba. Transacciones: [`0e0a1f77…`](https://stellar.expert/explorer/testnet/tx/0e0a1f77db605b8e1a9ca06e5afa961a6684c15a95d1a818df344a3fec9876cf) y [`2026bd1a…`](https://stellar.expert/explorer/testnet/tx/2026bd1aa86e6ce437c49b4f9d1dc49be95c11facb4a524c2d683ed57f83a27e). No es una validación con usuarios finales: es una prueba técnica de uso.
+- **Revisión técnica externa.** Un supervisor técnico revisó el repositorio y dio una evaluación positiva, con observaciones concretas: la comisión no se mostraba antes de firmar, faltaba el enlace al certificado en «Mi cuenta», la spec del sistema estaba desactualizada y la etiqueta de los contratos desplegados no estaba subida. Todo se corrigió, y sus observaciones sobre el alcance (no redesplegar, no apilar las tres tarifas, no construir todavía el formulario con KYC) quedaron registradas en el [ADR 0002](adr/0002-alcance-del-modelo-de-negocio.md).
+

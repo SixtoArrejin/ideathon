@@ -28,7 +28,7 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 - **GreenTon:** [`CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q`](https://stellar.expert/explorer/testnet/contract/CD4WZAWPGFZL2GUOOWYNSPG3CGNO6PA6QJ2UP5PCCOTBQK3KGJS25K7Q) · deploy [fc7cc8e0…](https://stellar.expert/explorer/testnet/tx/fc7cc8e023414ae301d0b290985e219447f08272af97b1d48fa77191e2d0352c)
 - **Mercado:** [`CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD`](https://stellar.expert/explorer/testnet/contract/CCVSHRV373O3QPIJL55LYQK6OGLLYIPMMD35KDQDY7AXHB7VLVOJTYDD) · deploy [00d7de79…](https://stellar.expert/explorer/testnet/tx/00d7de791c0a8a821aad800cb02d28155c393629243d88b51a68f8efca01dbbb)
 - **Activo de pago:** XLM nativo vía su SAC `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
-- **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD` · comprador de la demo `GAUJHWH757JYECRFIDJYU4UEPZCTJ7JHR2BZFSR3DEUSCMEFW7E5RXIT`
+- **Cuentas:** admin `GBUV6IJFW22PVJYBU2PNYNE3OLGC6BMYCTGTYYHD6LGZ4WUBXGTVB2ZY` · oráculo `GAD6MXY72PSLIMCSY2U5SCMVEXLWKW6DXP6U3BGFWYMVFIEMVQNMI2QL` · propietario `GC3OLPSBNRCMPEQUIPWIFCU2K5BOTDZD7EZUSI3AXSAVJ5YQM5K7WAQD` · comprador de la demo `GAUJHWH757JYECRFIDJYU4UEPZCTJ7JHR2BZFSR3DEUSCMEFW7E5RXIT` · comprador desde la web con Freighter `GCGUEI3ECPOBNJI5DHI4GO3RHI3PYIR5SVMOM4BEYGHJPBTOUADACRTN`
 
 | Acción | Tx |
 |---|---|
@@ -42,8 +42,10 @@ Construido con **Claude Code** (Anthropic): contrato, oráculo, frontend, docume
 | Oferta 0: 3.000 t del lote IMPEN1 2026 a 0,1 XLM/t, en custodia del mercado | [f9dc5309…](https://stellar.expert/explorer/testnet/tx/f9dc5309ebdb6c4713b4f2c853c19e3dbb492e3e5557f05f6820b6a76a33e598) |
 | **Compra y quema atómica:** 500 t de IMPEN1 2026, el comprador paga 50 XLM al dueño y se quema a nombre de "Empresa Demo SA - huella 2026" | [e87f6d61…](https://stellar.expert/explorer/testnet/tx/e87f6d61d8bf51b2b88a28e9ef3cf1e7b2f993c894dfe6359bf9f87cccba4e89) |
 | Oferta 1: 2.000 t del lote CHACO1 2026 a 0,2 XLM/t (queda abierta) | [0bdf0799…](https://stellar.expert/explorer/testnet/tx/0bdf0799424934c8a03b1f9f0f4e08a2519b9f4a8a782bbe6ba0386bc956d7f2) |
+| **Compra y quema desde la web con Freighter** (cuenta distinta de las del desarrollo): 100 t de IMPEN1 2026, paga 10 XLM, a nombre de «Asymmetric» | [0e0a1f77…](https://stellar.expert/explorer/testnet/tx/0e0a1f77db605b8e1a9ca06e5afa961a6684c15a95d1a818df344a3fec9876cf) |
+| Segunda compra y quema desde la web con Freighter: 15 t de IMPEN1 2026, paga 1,5 XLM | [2026bd1a…](https://stellar.expert/explorer/testnet/tx/2026bd1aa86e6ce437c49b4f9d1dc49be95c11facb4a524c2d683ed57f83a27e) |
 
-Estado tras estas transacciones: 61.239 GTON en circulación y 500 retiradas.
+Estado al 17/10 por la mañana: **61.124 GTON en circulación y 615 retiradas en 3 compras** (500 de la compra de demostración y 115 de las dos compras con Freighter). La web y Stellar Expert muestran siempre el estado actual.
 
 **Primera entrega (archivo).** El contrato de la primera entrega, sin lotes ni mercado, sigue en la red: [`CCNQ7X37…SXMFEMG`](https://stellar.expert/explorer/testnet/contract/CCNQ7X37TFBQQVSIX7H7JMINVIBOR7FZBEAA474FFTVIONJGXSXMFEMG). Su evidencia satelital está en `web/public/verifications.v1.json`.
 
