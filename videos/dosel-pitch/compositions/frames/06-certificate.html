@@ -307,11 +307,11 @@
     }
   </style>
 
-  <div id="root" data-composition-id="scene-06" data-width="1920" data-height="1080" data-start="0" data-duration="16">
+  <div id="root" data-composition-id="scene-06" data-width="1920" data-height="1080" data-start="0" data-duration="12.8">
     <div class="s6-stage">
       <div id="s6-viewer" class="s6-viewer">
-        <!-- Beat 1 (0s - 4.4s): App Registro de retiros -->
-        <div id="s6-b1" class="clip s6-beat s6-app-retiros" data-start="0" data-duration="4.4" data-track-index="0">
+        <!-- Beat 1 (0s - 3.8s): App Registro de retiros -->
+        <div id="s6-b1" class="clip s6-beat s6-app-retiros" data-start="0" data-duration="3.8" data-track-index="0">
           <div class="s6-app-nav">
             <div class="s6-nav-brand">
               <img src="assets/logo-mark.svg" alt="Dosel" style="width: 26px; height: 26px;" />
@@ -368,8 +368,8 @@
           </div>
         </div>
 
-        <!-- Beat 2 (4.4s - 16.0s): Real Certificado · Dosel.pdf -->
-        <div id="s6-b2" class="clip s6-beat s6-pdf-wrap" data-start="4.4" data-duration="11.6" data-track-index="0">
+        <!-- Beat 2 (3.8s - 12.8s): Real Certificado · Dosel.pdf -->
+        <div id="s6-b2" class="clip s6-beat s6-pdf-wrap" data-start="3.8" data-duration="9.0" data-track-index="0">
           <div class="s6-pdf-bar">
             <span>📄 Certificado · Dosel.pdf — /#/certificado/0</span>
             <span class="s6-pdf-pill">PDF OFICIAL · QR VERIFICABLE</span>
@@ -419,15 +419,15 @@
       tl.fromTo("#s6-s2", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.0);
       tl.fromTo("#s6-s3", { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.45, ease: "power2.out" }, 2.8);
 
-      // Pointer moves to "Certificado ↗" button in row #1 (x=995, y=340) and clicks at 3.9s
-      tl.fromTo("#s6-ptr", { x: 480, y: 240, scale: 1 }, { x: 995, y: 340, scale: 1, duration: 1.3, ease: "power2.inOut" }, 1.0);
-      tl.to("#s6-ptr", { scale: 0.78, duration: 0.15, yoyo: true, repeat: 1 }, 3.9);
+      // Pointer moves to "Certificado ↗" button in row #1 (x=995, y=340) and clicks at 3.4s
+      tl.fromTo("#s6-ptr", { x: 480, y: 240, scale: 1 }, { x: 995, y: 340, scale: 1, duration: 1.2, ease: "power2.inOut" }, 0.8);
+      tl.to("#s6-ptr", { scale: 0.78, duration: 0.14, yoyo: true, repeat: 1 }, 3.4);
 
-      // Once Certificado · Dosel.pdf opens at 4.4s, start at top (-24px) then scroll smoothly to show the QR code at bottom (-520px)
-      tl.fromTo("#s6-pdf-img", { y: -24 }, { y: -520, duration: 2.6, ease: "power2.inOut" }, 6.4);
+      // Once Certificado · Dosel.pdf opens at 3.8s, scroll smoothly to show QR code
+      tl.fromTo("#s6-pdf-img", { y: -24 }, { y: -520, duration: 2.2, ease: "power2.inOut" }, 4.6);
 
       // Move pointer to the QR code and verification block on the PDF
-      tl.to("#s6-ptr", { x: 230, y: 585, duration: 1.4, ease: "power2.inOut" }, 7.6);
+      tl.to("#s6-ptr", { x: 230, y: 585, duration: 1.2, ease: "power2.inOut" }, 5.8);
 
       window.__timelines = window.__timelines || {};
       window.__timelines["scene-06"] = tl;
