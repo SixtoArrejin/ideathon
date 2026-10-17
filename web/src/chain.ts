@@ -20,7 +20,8 @@ export type LotInfo = { minted: bigint; ndvi_milli: number; ledger_time: bigint 
 export type Offer = {
   seller: string; parcel: string; period: number; available: bigint; price_per_ton: bigint; open: boolean;
 };
-export type Purchase = { buyer: string; offer_id: number; amount: bigint; paid: bigint; retirement_id: number };
+/** `fee` existe solo en mercados desplegados con comisión de plataforma. */
+export type Purchase = { buyer: string; offer_id: number; amount: bigint; paid: bigint; fee?: bigint; retirement_id: number };
 
 const sym = (s: string) => nativeToScVal(s, { type: "symbol" });
 const u32 = (n: number) => nativeToScVal(n, { type: "u32" });

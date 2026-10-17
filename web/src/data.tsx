@@ -9,6 +9,7 @@ import { useUi } from "./ui";
 import type { Cover } from "./components/CoverCheck";
 
 export type OpenOffer = Offer & { id: number };
+export type RetirementRow = Retirement & { id: number };
 export type Verification = {
   parcel: string; period: number; ndvi: number; scene: string; scene_date: string;
   minted: string | number; tx: string;
@@ -20,7 +21,7 @@ type Data = {
   parcels: Record<string, Parcel>;
   ver: Verification[];
   cover: Cover;
-  rets: Retirement[];
+  rets: RetirementRow[];
   offers: OpenOffer[];
   myOffers: OpenOffer[];
   lotInfo: Record<string, LotInfo | null>;
@@ -46,7 +47,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [parcels, setParcels] = useState<Record<string, Parcel>>({});
   const [ver, setVer] = useState<Verification[]>([]);
   const [cover, setCover] = useState<Cover>({});
-  const [rets, setRets] = useState<Retirement[]>([]);
+  const [rets, setRets] = useState<RetirementRow[]>([]);
   const [offers, setOffers] = useState<OpenOffer[]>([]);
   const [lotInfo, setLotInfo] = useState<Record<string, LotInfo | null>>({});
   const [lots, setLots] = useState<LotBalance[]>([]);
@@ -61,8 +62,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSupply(s); setRetired(r);
       const ps = await Promise.all(PARCEL_IDS.map(async (id) => [id, await getParcel(id)] as const));
       setParcels(Object.fromEntries(ps));
-      const list = await Promise.all(Array.from({ length: Number(n) }, (_, i) => getRetirement(i)));
-      setRets(list.filter((x): x is Retirement => !!x).reverse());
+      const list = await Promise.all(Array.from({ length: Number(n) }, async (_, i) => {
+        const r = await getRetirement(i);
+        return r ? { ...r, id: i } : null;
+      }));
+      setRets(list.filter((x): x is RetirementRow => !!x).reverse());
       const os = await Promise.all(Array.from({ length: Number(oc) }, async (_, id) => {
         const o = await getOffer(id);
         return o ? { ...o, id } : null;

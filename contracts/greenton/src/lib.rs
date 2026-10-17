@@ -2,6 +2,7 @@
 //! GreenTon — créditos de carbono verificados por satélite (CarbonTrack NEA).
 //!
 //! 1 GreenTon = 1 tCO2e. Solo el oráculo puede emitir, una vez por predio y período.
+//! Solo el admin (auditor) registra predios, tras verificar titularidad y polígono fuera de la cadena.
 //! Cada emisión crea un lote (predio, período): saldos, transferencias y retiros son por lote,
 //! así que cualquier tonelada se puede rastrear hasta la verificación satelital que la originó.
 //! Si el NDVI cae bajo el umbral absoluto o respecto de la línea base, el predio se congela.
@@ -215,7 +216,8 @@ impl GreenTon {
     }
 
     // ---- Registro de predios ----
-    /// El propietario registra su predio. La línea base se fija en la primera verificación.
+    /// El admin (entidad verificadora) da de alta un predio ya auditado a nombre de `owner`.
+    /// La línea base se fija en la primera verificación.
     pub fn register_parcel(
         e: Env,
         owner: Address,
@@ -223,7 +225,8 @@ impl GreenTon {
         hectares: u32,
         bbox: String,
     ) -> Result<(), Error> {
-        owner.require_auth();
+        let admin: Address = e.storage().instance().get(&Key::Admin).unwrap();
+        admin.require_auth();
         let key = Key::Parcel(parcel.clone());
         if e.storage().persistent().has(&key) {
             return Err(Error::ParcelExists);

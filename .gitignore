@@ -1,6 +1,9 @@
 # Rust's output directory
 target
 
+# Instantáneas que los tests de Soroban regeneran en cada corrida (solo meten ruido en el historial)
+contracts/*/test_snapshots/
+
 # Local settings
 .soroban
 .stellar

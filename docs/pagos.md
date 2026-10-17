@@ -105,10 +105,10 @@ Casos: publicar y verificar la custodia, comprar entera, comprar en partes, canc
 
 1. `stellar contract build` compila los dos contratos.
 2. Se obtiene el ID del SAC de XLM: `stellar contract id asset --asset native --network testnet`.
-3. Se despliega `market` con el ID de GreenTon y el del SAC como argumentos del constructor.
+3. Se despliega `market` con el ID de GreenTon, el del SAC, la cuenta de tesorería y la comisión en puntos básicos (`--treasury`, `--fee_bps`; 500 = 5 %, tope 1000) como argumentos del constructor.
 4. Se actualizan `web/src/config.ts` y el README con el ID nuevo del mercado.
 
-GreenTon no se redespliega.
+Con el modelo de negocio ([`docs/specs/modelo-de-negocio.md`](specs/modelo-de-negocio.md)) GreenTon **sí** se redespliega, porque `register_parcel` pasa a exigir la firma del admin; hay que volver a registrar y verificar los predios.
 
 ## Tecnologías
 
